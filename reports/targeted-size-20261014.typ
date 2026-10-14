@@ -82,6 +82,12 @@ algorithms and bindings unchanged.
 
 == Reproduction
 
+The subsequent selective polynomial source trial is documented in
+selective-polynomial-sharing-20261014.typ. It achieves a 74.57 MB wheel using
+stable attributes at the existing O3/ThinLTO settings, with small fast paths
+kept inlineable and hot heap powering specialized. The source patch and all
+serial timing samples are included.
+
 Keep the locked dependencies and build a complete Community wheel. The audit
 needs an unstripped library; append `-- -C strip=none` to maturin build. Then run
 `python scripts/report_native_size.py target/release/libsymbolica_community.so

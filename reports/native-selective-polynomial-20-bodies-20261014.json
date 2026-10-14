@@ -1,0 +1,991 @@
+{
+  "library": "unstripped release/libsymbolica_community.so",
+  "library_bytes": 226188560,
+  "library_sha256": "cfd3dbc9e1a21c0f6e3c6c707ed39df8de058bbfbe734c4d59049035990d05be",
+  "elf_sections": {
+    ".dynsym": 9936,
+    ".gnu.version": 828,
+    ".gnu.version_r": 512,
+    ".gnu.hash": 356,
+    ".hash": 3320,
+    ".dynstr": 6013,
+    ".rela.dyn": 3416616,
+    ".rela.plt": 480,
+    ".gcc_except_table": 5466796,
+    ".rodata": 22315256,
+    ".eh_frame_hdr": 912324,
+    ".eh_frame": 8493852,
+    ".init": 27,
+    ".fini": 13,
+    ".text": 146594713,
+    ".plt": 336,
+    ".tdata": 880,
+    ".tbss": 1316,
+    ".fini_array": 8,
+    ".init_array": 2808,
+    ".data.rel.ro": 2323840,
+    ".dynamic": 496,
+    ".got": 167608,
+    ".got.plt": 184,
+    ".relro_padding": 512,
+    ".tm_clone_table": 0,
+    ".data": 226872,
+    ".bss": 17780,
+    ".comment": 175,
+    ".debug_abbrev": 8780,
+    ".debug_info": 789187,
+    ".debug_aranges": 16384,
+    ".debug_ranges": 312544,
+    ".debug_str": 1370004,
+    ".debug_line": 313710,
+    ".symtab": 5231112,
+    ".shstrtab": 382,
+    ".strtab": 28198894
+  },
+  "definition_owner_bytes": {
+    "symbolica": 35908528,
+    "symbolica_integrate": 27742362,
+    "core": 14047008,
+    "rustred": 6235708,
+    "spenso": 5484736,
+    "other": 4716586,
+    "alloc": 3724317,
+    "symbolica_amflow": 3256976,
+    "numerica": 2771054,
+    "typst_library": 2753428,
+    "idenso": 2448588,
+    "vakint": 2117551,
+    "graphica": 1926545,
+    "fastsecdec": 1331995,
+    "linnest": 1139241,
+    "hyperbolica": 1105634,
+    "spynso3": 1103041,
+    "linnet_py": 1090408,
+    "linnet": 1060750,
+    "hashbrown": 1040625,
+    "feynkit_py": 1039163,
+    "oneloop": 869018,
+    "rustred_app": 809872,
+    "serde_json": 729713,
+    "pyo3": 724908,
+    "feynkit_graph": 700026,
+    "std": 684829,
+    "typst_layout": 641240,
+    "three_dimensional_reps": 591259,
+    "serde_path_to_error": 570270,
+    "symjit": 531996,
+    "feynkit_generator": 522073,
+    "hayro_interpret": 481464,
+    "wasmi": 477483,
+    "skrifa": 400147,
+    "krilla": 395584,
+    "rayon_core": 375895,
+    "hayro_syntax": 366057,
+    "brotli": 361922,
+    "regex_automata": 348420,
+    "usvg": 347782,
+    "fastsecdec_python": 326229,
+    "wasmparser": 305124,
+    "read_fonts": 297176,
+    "moxcms": 286663,
+    "feynkit_model": 281057,
+    "zune_jpeg": 279463,
+    "oneloopreduce": 276921,
+    "hayagriva": 274472,
+    "image_webp": 266815,
+    "toml": 247005,
+    "feynkit_tensor": 222811,
+    "serde": 214646,
+    "hayro_jbig2": 214119,
+    "typst_pdf": 213453,
+    "typst_html": 209564,
+    "ciborium": 206983,
+    "typst_syntax": 206310,
+    "tiny_skia": 198095,
+    "ed25519_compact": 196725,
+    "vello_cpu": 193744,
+    "fearless_simd": 186433,
+    "_rustred": 184470,
+    "rustybuzz": 183955,
+    "citationberg": 164059,
+    "ttf_parser": 158583,
+    "clarabel": 155078,
+    "regex_syntax": 148154,
+    "hayro_jpeg2000": 143831,
+    "tracing_subscriber": 135231,
+    "rayon": 134209,
+    "image": 133859,
+    "toml_edit": 133818,
+    "aho_corasick": 131920,
+    "write_fonts": 128451,
+    "shared_aliases": 126480,
+    "symbolica_typst_plugin": 113752,
+    "comemo": 113144,
+    "syntect": 110379,
+    "time": 108381,
+    "biblatex": 107536,
+    "rustred_feynkit": 107059,
+    "pic_scale": 106526,
+    "typst_eval": 106000,
+    "smallvec": 102217,
+    "fastsecdec_sectors": 101729,
+    "spenso_hep_lib": 100010,
+    "quick_xml": 99367,
+    "dot_parser": 96550,
+    "oneloop_native": 90558,
+    "resvg": 90053,
+    "once_cell": 88459,
+    "pdf_writer": 85686,
+    "glidesort": 81935,
+    "indexmap": 79683,
+    "yaml_rust": 78115,
+    "ecow": 70155,
+    "zlib_rs": 69733,
+    "rust_lisp": 69719,
+    "feynkit_cff": 68640,
+    "typst_svg": 68343,
+    "unsafe_libyaml": 66298,
+    "subsetter": 65989,
+    "papergrid": 64739,
+    "pxfm": 64384,
+    "wasmi_ir": 64123,
+    "fancy_regex": 63762,
+    "tabled": 63157,
+    "serde_yaml": 62957,
+    "serde_core": 62914,
+    "brotli_decompressor": 61499,
+    "feynkit_amplitude": 61032,
+    "feynkit_kinematics": 58936,
+    "typst_render": 57578,
+    "string_template_plus": 57348,
+    "png": 55756,
+    "vello_common": 51460,
+    "figment": 50984,
+    "kurbo": 48393,
+    "data_encoding": 47382,
+    "hayro_write": 46501,
+    "symbolica_community": 45340,
+    "roxmltree": 44167,
+    "typst_realize": 43801,
+    "tiny_skia_path": 42963,
+    "icu_collator": 42297,
+    "svgtypes": 41725,
+    "kurvst": 39305,
+    "url": 38646,
+    "bincode": 38108,
+    "hayro": 38086,
+    "hayro_svg": 37776,
+    "hayro_cmap": 36969,
+    "toml_parser": 36707,
+    "pest": 35792,
+    "gimli": 34729,
+    "ahash": 33929,
+    "rust_decimal": 33658,
+    "plist": 33351,
+    "fontdb": 30353,
+    "peniko": 30263,
+    "icu_locale_core": 29887,
+    "chrono": 29610,
+    "fastsecdec_qmc": 29282,
+    "memchr": 27679,
+    "hayro_ccitt": 27617,
+    "icu_segmenter": 26724,
+    "winnow": 26591,
+    "idna": 26296,
+    "libm": 24884,
+    "wasmi_core": 24873,
+    "typst_renderer": 24542,
+    "sharded_slab": 24439,
+    "ndarray": 23894,
+    "krilla_svg": 23367,
+    "weezl": 23343,
+    "miniz_oxide": 23275,
+    "exif": 22899,
+    "oneloopreduce_python": 22046,
+    "flate2": 22032,
+    "rustc_demangle": 20282,
+    "feynkit_ufo": 20217,
+    "indenter": 20109,
+    "fdeflate": 19186,
+    "xprec": 18698,
+    "bitvec": 17333,
+    "typst_utils": 17305,
+    "xmlwriter": 16355,
+    "xmp_writer": 16049,
+    "unicode_segmentation": 15545,
+    "rug": 15466,
+    "tinyjson": 15446,
+    "rustred_order": 14868,
+    "rand_chacha": 14536,
+    "toml_datetime": 14210,
+    "simplecss": 14177,
+    "anyhow": 13731,
+    "imagesize": 13503,
+    "addr2line": 13281,
+    "crossbeam_deque": 13044,
+    "rkyv": 13027,
+    "subprocess": 13005,
+    "color": 12809,
+    "blake3": 12551,
+    "titlecase": 12466,
+    "parking_lot": 11322,
+    "icu_normalizer": 11314,
+    "numpy": 10653,
+    "regex": 10308,
+    "data_url": 10143,
+    "itertools": 9070,
+    "crossbeam_epoch": 8745,
+    "gif": 8721,
+    "tracing_core": 8471,
+    "infer": 8277,
+    "walkdir": 8048,
+    "smartstring": 7929,
+    "typst": 7895,
+    "codex": 7880,
+    "palette": 7793,
+    "colored": 7732,
+    "eyre": 7642,
+    "unicode_bidi": 7190,
+    "rand": 7098,
+    "wasmi_collections": 6957,
+    "spec_math": 6582,
+    "version_compare": 6573,
+    "thread_local": 6156,
+    "pixglyph": 6100,
+    "two_face": 5995,
+    "base64": 5970,
+    "hayro_postscript": 5950,
+    "csv": 5402,
+    "hypher": 5401,
+    "symbolica_data": 5259,
+    "iana_time_zone": 4920,
+    "zune_core": 4917,
+    "unic_langid_impl": 4894,
+    "unicode_normalization": 4865,
+    "ciborium_ll": 4857,
+    "ryu": 4831,
+    "compiler_builtins": 4814,
+    "crc32fast": 4759,
+    "rustc_hash": 4470,
+    "simdutf8": 4371,
+    "sha2": 4365,
+    "unicode_ccc": 4348,
+    "chinese_number": 4121,
+    "zerotrie": 3949,
+    "icu_locale_fallback": 3927,
+    "icu_provider": 3668,
+    "tracing_log": 3650,
+    "csv_core": 3583,
+    "linked_hash_map": 3566,
+    "nu_ansi_term": 3539,
+    "unscanny": 3501,
+    "typst_assets": 3483,
+    "icu_provider_blob": 3323,
+    "alloc_stdlib": 3272,
+    "semver": 3251,
+    "vectorize": 3038,
+    "tempfile": 2681,
+    "directories": 2607,
+    "simd_adler32": 2525,
+    "bumpalo": 2331,
+    "icu_collections": 2323,
+    "typst_kit": 2273,
+    "lipsum": 2248,
+    "unicode_vo": 2164,
+    "getrandom": 2117,
+    "bytecheck": 2044,
+    "parking_lot_core": 2018,
+    "unicode_math_class": 1984,
+    "roman_numerals_rs": 1909,
+    "phf": 1823,
+    "libloading": 1808,
+    "twofloat": 1736,
+    "amd": 1732,
+    "std_detect": 1687,
+    "litemap": 1630,
+    "toml_writer": 1589,
+    "toml_write": 1560,
+    "stacker": 1538,
+    "slab": 1469,
+    "hugepage_rs": 1385,
+    "append_only_vec": 1289,
+    "region": 1150,
+    "num_rational": 1112,
+    "siphasher": 1092,
+    "typed_arena": 1057,
+    "portable_atomic": 1051,
+    "tracing": 1045,
+    "adler2": 984,
+    "unicode_width": 976,
+    "font_types": 972,
+    "cgmath": 965,
+    "bytecount": 938,
+    "__rustc": 854,
+    "memmap2": 805,
+    "arrayvec": 712,
+    "log": 689,
+    "zerovec": 661,
+    "typst_timing": 654,
+    "num_complex": 623,
+    "thin_vec": 612,
+    "utf8_iter": 608,
+    "bit_set": 550,
+    "matchers": 521,
+    "fastrand": 506,
+    "either": 480,
+    "postcard": 443,
+    "tinyvec": 429,
+    "foldhash": 429,
+    "strict_num": 423,
+    "dirs_sys": 411,
+    "symbolica_utils": 406,
+    "uncased": 381,
+    "unicode_bidi_mirroring": 329,
+    "wide": 216,
+    "generic_array": 214,
+    "az": 210,
+    "percent_encoding": 198,
+    "bytemuck": 189,
+    "deranged": 178,
+    "rgb": 148,
+    "writeable": 128,
+    "same_file": 119,
+    "unicode_ident": 103,
+    "psm": 91,
+    "wyz": 70,
+    "bytes": 60,
+    "unicode_properties": 60,
+    "panic_unwind": 24,
+    "rand_core": 6
+  },
+  "explicit_instantiating_crate_bytes": {
+    "vakint": 7193603,
+    "symbolica_integrate": 4494885,
+    "symbolica_amflow": 3680501,
+    "rustred_app": 3345764,
+    "hyperbolica": 1820708,
+    "idenso": 1726944,
+    "rustred": 1676939,
+    "feynkit_tensor": 1109312,
+    "symbolica": 1091793,
+    "fastsecdec": 1003855,
+    "feynkit_generator": 979472,
+    "feynkit_graph": 798102,
+    "linnet_py": 694171,
+    "feynkit_py": 673108,
+    "feynkit_amplitude": 616373,
+    "hayagriva": 557114,
+    "linnest": 557031,
+    "typst_library": 472219,
+    "fastsecdec_python": 301996,
+    "rustred_feynkit": 289957,
+    "oneloopreduce": 288717,
+    "linnet": 247336,
+    "oneloop": 225531,
+    "typst_layout": 219575,
+    "feynkit_model": 213667,
+    "oneloop_native": 192202,
+    "resvg": 188214,
+    "typst_eval": 170981,
+    "three_dimensional_reps": 158945,
+    "symbolica_typst_plugin": 152901,
+    "krilla": 150345,
+    "hayro_interpret": 143266,
+    "spenso": 121155,
+    "typst_html": 110635,
+    "feynkit_cff": 107178,
+    "std": 96857,
+    "wasmi": 93300,
+    "feynkit_kinematics": 88808,
+    "image": 82916,
+    "spenso_hep_lib": 81681,
+    "typst_pdf": 80526,
+    "vello_cpu": 67181,
+    "typst_renderer": 56604,
+    "hayro_svg": 55776,
+    "symjit": 51960,
+    "fastsecdec_sectors": 50519,
+    "hayro_syntax": 49111,
+    "krilla_svg": 44025,
+    "hayro": 43995,
+    "feynkit_ufo": 43606,
+    "citationberg": 43035,
+    "tabled": 35434,
+    "typst_svg": 26742,
+    "regex_automata": 26107,
+    "usvg": 24962,
+    "skrifa": 20533,
+    "hayro_write": 18977,
+    "typst_realize": 18693,
+    "string_template_plus": 18270,
+    "simplecss": 17620,
+    "symbolica_community": 17239,
+    "syntect": 16269,
+    "numerica": 15707,
+    "idna": 11970,
+    "write_fonts": 10637,
+    "fancy_regex": 10470,
+    "oneloopreduce_python": 10167,
+    "tiny_skia": 8633,
+    "lipsum": 7936,
+    "subsetter": 7473,
+    "kurvst": 6388,
+    "biblatex": 6315,
+    "codex": 5534,
+    "titlecase": 5441,
+    "icu_provider_blob": 5090,
+    "tracing_subscriber": 5047,
+    "icu_collator": 4502,
+    "typst_syntax": 4259,
+    "symbolica_data": 4253,
+    "papergrid": 4116,
+    "two_face": 4067,
+    "aho_corasick": 3963,
+    "globset": 3729,
+    "typst": 3526,
+    "toml_edit": 3223,
+    "serde_yaml": 3220,
+    "serde_json": 2591,
+    "fontdb": 2510,
+    "toml": 2384,
+    "rustybuzz": 2367,
+    "rayon_core": 2311,
+    "wasmparser": 2200,
+    "typst_render": 2160,
+    "subprocess": 2056,
+    "fontconfig_parser": 1590,
+    "moxcms": 1472,
+    "dot_parser": 1413,
+    "xmlwriter": 1239,
+    "regex_syntax": 941,
+    "pic_scale": 930,
+    "yaml_rust": 916,
+    "svgtypes": 910,
+    "eyre": 897,
+    "typst_kit": 887,
+    "vello_common": 855,
+    "zune_jpeg": 816,
+    "rustc_demangle": 807,
+    "gimli": 787,
+    "anyhow": 755,
+    "parking_lot": 743,
+    "pdf_writer": 549,
+    "plist": 529,
+    "serde": 526,
+    "tinyjson": 526,
+    "fastrand": 471,
+    "weezl": 433,
+    "regex": 414,
+    "kurbo": 366,
+    "imagesize": 345,
+    "icu_segmenter": 332,
+    "icu_locale_fallback": 329,
+    "typst_utils": 301,
+    "image_webp": 299,
+    "gif": 289,
+    "figment": 281,
+    "png": 280,
+    "icu_normalizer": 262,
+    "walkdir": 248,
+    "parking_lot_core": 248,
+    "bincode": 223,
+    "quick_xml": 202,
+    "hayro_cmap": 201,
+    "rust_lisp": 192,
+    "fastsecdec_qmc": 188,
+    "rust_decimal": 188,
+    "numpy": 187,
+    "percent_encoding": 174,
+    "read_fonts": 164,
+    "roxmltree": 160,
+    "fdeflate": 151,
+    "unic_langid_impl": 149,
+    "tracing_core": 148,
+    "crossbeam_utils": 144,
+    "url": 144,
+    "serde_path_to_error": 143,
+    "stacker": 141,
+    "rustred_order": 140,
+    "typst_timing": 140,
+    "sharded_slab": 138,
+    "icu_locale_core": 128,
+    "chrono": 114,
+    "ttf_parser": 113,
+    "brotli_decompressor": 102,
+    "exif": 100,
+    "comemo": 94,
+    "wasmi_collections": 88,
+    "thread_local": 88,
+    "miniz_oxide": 83,
+    "tracing": 55,
+    "tracing_log": 55,
+    "brotli": 51,
+    "typst_assets": 47,
+    "icu_provider": 46,
+    "zlib_rs": 30,
+    "rkyv": 25,
+    "zune_core": 21,
+    "rug": 19
+  },
+  "unique_function_bytes": 145669683,
+  "unique_functions": 114372,
+  "repeated_function_names": 6840,
+  "largest_functions": [
+    {
+      "bytes": 381173,
+      "names": [
+        "vakint::matad_numerics::HPL_SUBSTITUTIONS::{closure#0}"
+      ],
+      "address": "0xa938d30"
+    },
+    {
+      "bytes": 366289,
+      "names": [
+        "symbolica_integrate::rules::rubi_4_5_0_trig_functions::push_rules"
+      ],
+      "address": "0x84d2370"
+    },
+    {
+      "bytes": 308898,
+      "names": [
+        "symbolica_integrate::rules::push_rules"
+      ],
+      "address": "0x839f7a0"
+    },
+    {
+      "bytes": 262997,
+      "names": [
+        "symbolica_integrate::rules::rubi_4_3_1_trig_functions::push_rules"
+      ],
+      "address": "0x848ad20"
+    },
+    {
+      "bytes": 256198,
+      "names": [
+        "symbolica_integrate::rules::rubi_7_3_4_inverse_or_hyperbolic_functions::push_rules"
+      ],
+      "address": "0x8a23ab0"
+    },
+    {
+      "bytes": 142875,
+      "names": [
+        "symbolica_integrate::rules::rubi_5_3_4_inverse_or_hyperbolic_functions::push_rules"
+      ],
+      "address": "0x8989db0"
+    },
+    {
+      "bytes": 134809,
+      "names": [
+        "<ed25519_compact::edwards25519::GeP2>::double_scalarmult_vartime"
+      ],
+      "address": "0x28e4d80"
+    },
+    {
+      "bytes": 134619,
+      "names": [
+        "<symbolica::atom::AtomView>::normalize"
+      ],
+      "address": "0x67b6a10"
+    },
+    {
+      "bytes": 132022,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_1_2_8_quadratic_binomial_products::push_rules"
+      ],
+      "address": "0x888fc10"
+    },
+    {
+      "bytes": 121750,
+      "names": [
+        "symbolica_integrate::rules::rubi_4_7_9_trig_functions::push_rules"
+      ],
+      "address": "0x8583870"
+    },
+    {
+      "bytes": 118013,
+      "names": [
+        "vakint::symbols::S::{closure#0}"
+      ],
+      "address": "0xa9a0940"
+    },
+    {
+      "bytes": 116407,
+      "names": [
+        "symbolica_integrate::rules::rubi_6_7_9_hyperbolic_functions::push_rules"
+      ],
+      "address": "0x86a3d70"
+    },
+    {
+      "bytes": 115713,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_2_2_4_quartic_trinomial_products::push_rules"
+      ],
+      "address": "0x87cd450"
+    },
+    {
+      "bytes": 112840,
+      "names": [
+        "symbolica_integrate::rules::unify_inert_trig_function::push_rules"
+      ],
+      "address": "0x85a2a70"
+    },
+    {
+      "bytes": 109971,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_2_2_3_quartic_trinomial_products::push_rules"
+      ],
+      "address": "0x87b05a0"
+    },
+    {
+      "bytes": 106404,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_1_2_9_quadratic_binomial_products::push_rules"
+      ],
+      "address": "0x88b1cf0"
+    },
+    {
+      "bytes": 103672,
+      "names": [
+        "symbolica_integrate::rubi_symbols::SYMBOLS::{closure#0}"
+      ],
+      "address": "0x7f2fcd0"
+    },
+    {
+      "bytes": 102947,
+      "names": [
+        "wasmi::engine::executor::instrs::execute_instrs"
+      ],
+      "address": "0xb0c8380"
+    },
+    {
+      "bytes": 102003,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_2_1_3_quadratic_trinomial_products::push_rules"
+      ],
+      "address": "0x88f1130"
+    },
+    {
+      "bytes": 100702,
+      "names": [
+        "<vakint::Integral>::new"
+      ],
+      "address": "0xaa3dbf0"
+    },
+    {
+      "bytes": 94035,
+      "names": [
+        "<symbolica::domains::rational_polynomial::RationalPolynomial<numerica::domains::integer::IntegerRing, u8>>::integrate"
+      ],
+      "address": "0x836e8f0"
+    },
+    {
+      "bytes": 91849,
+      "names": [
+        "symbolica_integrate::rules::rubi_2_3_miscellaneous_exponentials::push_rules"
+      ],
+      "address": "0x86e44a0"
+    },
+    {
+      "bytes": 91386,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_2_3_3_general_trinomial_products::push_rules"
+      ],
+      "address": "0x88081d0"
+    },
+    {
+      "bytes": 90089,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_2_3_4_general_trinomial_products::push_rules"
+      ],
+      "address": "0x88211e0"
+    },
+    {
+      "bytes": 78599,
+      "names": [
+        "symbolica_integrate::rules::rubi_4_1_11_sine_functions::push_rules"
+      ],
+      "address": "0x85c5070"
+    },
+    {
+      "bytes": 78193,
+      "names": [
+        "<symbolica::evaluate::evaluator::ProgramView<numerica::domains::float::complex::Complex<f64>>>::export_asm_complex_impl"
+      ],
+      "address": "0x697d1f0"
+    },
+    {
+      "bytes": 76144,
+      "names": [
+        "symbolica_integrate::rules::rubi_4_1_2_2_sine_functions::push_rules"
+      ],
+      "address": "0x863c0c0"
+    },
+    {
+      "bytes": 74854,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_1_1_3_linear_binomial_products::push_rules"
+      ],
+      "address": "0x8712000"
+    },
+    {
+      "bytes": 74455,
+      "names": [
+        "symbolica_integrate::rules::rubi_4_1_2_1_sine_functions::push_rules"
+      ],
+      "address": "0x8627e20"
+    },
+    {
+      "bytes": 73840,
+      "names": [
+        "symbolica_integrate::rules::rubi_1_2_1_6_quadratic_trinomial_products::push_rules"
+      ],
+      "address": "0x891f360"
+    }
+  ],
+  "repeated_names": [
+    {
+      "name": "<symbolica::atom::AtomView>::add_normalized_slice::<symbolica::atom::AtomOrView>",
+      "copies": 17,
+      "bytes": 327965,
+      "bytes_beyond_largest_copy": 308474
+    },
+    {
+      "name": "<symbolica::parser::Token>::parse_with_atom_info::<&str>",
+      "copies": 12,
+      "bytes": 292453,
+      "bytes_beyond_largest_copy": 266194
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::lift_modular_factor_product_tree::<u32>",
+      "copies": 6,
+      "bytes": 235962,
+      "bytes_beyond_largest_copy": 195167
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::multivariate_factorization_with_retries",
+      "copies": 6,
+      "bytes": 232948,
+      "bytes_beyond_largest_copy": 188054
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::bivariate_factor_reconstruct",
+      "copies": 6,
+      "bytes": 186185,
+      "bytes_beyond_largest_copy": 152572
+    },
+    {
+      "name": "<spenso::network::store::NetworkStore<idenso::tensor::SymbolicTensor, symbolica::atom::Atom> as spenso::network::ExecuteOp<spenso::network::library::function_lib::Wrap, spenso::network::library::DummyLibrary<idenso::tensor::SymbolicTensor>, spenso::network::library::DummyKey, symbolica::atom::Symbol, spenso::structure::abstract_index::AbstractIndex>>::execute::<spenso::network::contract::SmallestDegree>",
+      "copies": 4,
+      "bytes": 162566,
+      "bytes_beyond_largest_copy": 119971
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::lll_factor_recombination",
+      "copies": 6,
+      "bytes": 148391,
+      "bytes_beyond_largest_copy": 122894
+    },
+    {
+      "name": "<symbolica::parser::Token>::parse_with_atom_info::<&alloc::string::String>",
+      "copies": 6,
+      "bytes": 130876,
+      "bytes_beyond_largest_copy": 108723
+    },
+    {
+      "name": "<symbolica::atom::AtomView>::replace_no_norm::<&symbolica::id::Replacement>",
+      "copies": 12,
+      "bytes": 128052,
+      "bytes_beyond_largest_copy": 115627
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::quot_rem_impl_with_degrees",
+      "copies": 10,
+      "bytes": 121507,
+      "bytes_beyond_largest_copy": 99595
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::logarithmic_derivative_coefficients",
+      "copies": 6,
+      "bytes": 121476,
+      "bytes_beyond_largest_copy": 101230
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing, u8>>::multivariate_factorization_bivariate_start",
+      "copies": 2,
+      "bytes": 113916,
+      "bytes_beyond_largest_copy": 56958
+    },
+    {
+      "name": "<spenso::structure::ordered::OrderedStructure>::from_function_atom",
+      "copies": 5,
+      "bytes": 112548,
+      "bytes_beyond_largest_copy": 90032
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing, u32>>::exact_square_root",
+      "copies": 6,
+      "bytes": 110414,
+      "bytes_beyond_largest_copy": 91945
+    },
+    {
+      "name": "<symbolica::parser::Token>::parse_symbol::<&str>",
+      "copies": 13,
+      "bytes": 107113,
+      "bytes_beyond_largest_copy": 96028
+    },
+    {
+      "name": "<symbolica::atom::representation::MulView as symbolica::printer::FormattedPrintMul>::fmt_output::<alloc::string::String>",
+      "copies": 7,
+      "bytes": 104984,
+      "bytes_beyond_largest_copy": 89967
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::mul_dense",
+      "copies": 9,
+      "bytes": 104645,
+      "bytes_beyond_largest_copy": 92984
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::factor_quadratic",
+      "copies": 6,
+      "bytes": 103342,
+      "bytes_beyond_largest_copy": 81468
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::sparse_coefficient_hensel_lift_mod_prime::<<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing>>::multivariate_factorization_with_retries::{closure#9}>",
+      "copies": 6,
+      "bytes": 101812,
+      "bytes_beyond_largest_copy": 84764
+    },
+    {
+      "name": "<symbolica::atom::representation::FunView>::format::<alloc::string::String>",
+      "copies": 7,
+      "bytes": 100382,
+      "bytes_beyond_largest_copy": 85534
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::finite_field::FiniteField<u32>>>::sparse_multivariate_diophantine_two_factor_by_sampling",
+      "copies": 5,
+      "bytes": 98673,
+      "bytes_beyond_largest_copy": 78679
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<symbolica::domains::atom::AtomField, u32>>::heap_pow_impl",
+      "copies": 2,
+      "bytes": 95252,
+      "bytes_beyond_largest_copy": 46962
+    },
+    {
+      "name": "<symbolica::parser::Token>::to_atom_with_output_no_norm::<&str>",
+      "copies": 12,
+      "bytes": 94276,
+      "bytes_beyond_largest_copy": 81322
+    },
+    {
+      "name": "<symbolica::atom::AtomView>::to_rational_polynomial_impl::<numerica::domains::rational::FractionField<numerica::domains::integer::IntegerRing>, numerica::domains::integer::IntegerRing, u16>",
+      "copies": 7,
+      "bytes": 91256,
+      "bytes_beyond_largest_copy": 77521
+    },
+    {
+      "name": "<spenso::network::Network<spenso::network::store::NetworkStore<idenso::tensor::SymbolicTensor, symbolica::atom::Atom>, spenso::network::library::DummyKey, symbolica::atom::Symbol>>::parse_expanded_function::<spenso::structure::ordered::OrderedStructure, spenso::network::library::DummyLibrary<idenso::tensor::SymbolicTensor>, spenso::network::library::panicing::ErroringLibrary<symbolica::atom::Symbol>>",
+      "copies": 4,
+      "bytes": 91133,
+      "bytes_beyond_largest_copy": 63470
+    },
+    {
+      "name": "<symbolica::evaluate::evaluator::ExpressionEvaluator<numerica::domains::float::complex::Complex<numerica::domains::rational::Fraction<numerica::domains::integer::IntegerRing>>>>::vectorize::<symbolica::evaluate::dual::Dualizer<numerica::domains::dual::HyperDual<numerica::domains::float::complex::Complex<numerica::domains::rational::Fraction<numerica::domains::integer::IntegerRing>>>>>",
+      "copies": 2,
+      "bytes": 90796,
+      "bytes_beyond_largest_copy": 42270
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing, u8>>::gcd_impl",
+      "copies": 2,
+      "bytes": 88482,
+      "bytes_beyond_largest_copy": 44241
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing, u8>>::heap_pow_impl",
+      "copies": 2,
+      "bytes": 87524,
+      "bytes_beyond_largest_copy": 43687
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<numerica::domains::integer::IntegerRing, u8>>::hensel_lift_with_strategy::<u32>",
+      "copies": 2,
+      "bytes": 87196,
+      "bytes_beyond_largest_copy": 43598
+    },
+    {
+      "name": "<symbolica::poly::polynomial::MultivariatePolynomial<symbolica::domains::algebraic::AlgebraicExtension<numerica::domains::finite_field::FiniteField<u64>>, u8>>::construct_new_image_multiple_scales",
+      "copies": 2,
+      "bytes": 86954,
+      "bytes_beyond_largest_copy": 43477
+    }
+  ],
+  "notes": [
+    "Owners describe definitions; generic core/alloc helpers are not attributed to consumers.",
+    "Folded aliases count once; cross-owner aliases have their own category.",
+    "Repeated names are candidates for inspection; specialized bodies can differ.",
+    "Instantiating-crate counts cover explicit v0 suffixes only, not all code.",
+    "Section sizes include alignment; function sizes exclude most padding.",
+    "Function attribution is uncompressed and cannot be added to compressed wheel sizes."
+  ],
+  "wheel": {
+    "path": "dist/selective-polynomial/symbolica-3.0.2-cp39-abi3-manylinux_2_39_x86_64.whl",
+    "bytes": 73981339,
+    "largest_members": [
+      {
+        "path": "symbolica/core.abi3.so",
+        "bytes": 189947336,
+        "compressed_bytes": 73556975
+      },
+      {
+        "path": "symbolica-3.0.2.dist-info/sboms/symbolica_community.cyclonedx.json",
+        "bytes": 840117,
+        "compressed_bytes": 106350
+      },
+      {
+        "path": "symbolica/community/hepkit/__init__.pyi",
+        "bytes": 470365,
+        "compressed_bytes": 79474
+      },
+      {
+        "path": "symbolica/core.pyi",
+        "bytes": 450203,
+        "compressed_bytes": 66044
+      },
+      {
+        "path": "symbolica/community/tensor/__init__.pyi",
+        "bytes": 439021,
+        "compressed_bytes": 61343
+      },
+      {
+        "path": "symbolica-3.0.2.dist-info/licenses/licenses/typst-fonts-NOTICE",
+        "bytes": 76850,
+        "compressed_bytes": 23226
+      },
+      {
+        "path": "symbolica/community/graph/__init__.pyi",
+        "bytes": 63949,
+        "compressed_bytes": 12020
+      },
+      {
+        "path": "examples/hep/hep_two_loop_kite.py",
+        "bytes": 26778,
+        "compressed_bytes": 9181
+      },
+      {
+        "path": "examples/hep/massive_kite.py",
+        "bytes": 27864,
+        "compressed_bytes": 9066
+      },
+      {
+        "path": "symbolica/community/hepkit/sector_decomposition/__init__.pyi",
+        "bytes": 42446,
+        "compressed_bytes": 8180
+      }
+    ]
+  }
+}
