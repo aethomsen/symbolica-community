@@ -28,10 +28,10 @@ crate-type = ["rlib", "cdylib"]
 [profile.dev.package.symbolica]
 opt-level = 2
 
-# Optimize across crates in native release builds with ThinLTO.
+# Keep computation speed as the native release default; share code with ThinLTO.
 [profile.release]
 lto = "thin"
-opt-level = "s"
+opt-level = 3
 codegen-units = 1
 strip = "symbols"
 

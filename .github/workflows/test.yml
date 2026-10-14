@@ -42,9 +42,13 @@ jobs:
             - name: Check core citation stub in source and wheel
               run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
 
+            - name: Build resource wheels
+              run: python scripts/build_data_bundle.py --out dist --check-catalog
+
             - name: Install package and test dependencies
               run: |
-                  for wheel in dist/*.whl; do
+                  pip install dist/symbolica_fonts-*.whl dist/symbolica_vakint_data-*.whl
+                  for wheel in dist/symbolica-*.whl; do
                       pip install "$wheel[notebook-display]"
                   done
                   pip install pytest ty numpy "tomli>=2.0.1; python_version < '3.11'"

@@ -1,3 +1,12 @@
+[target.'cfg(all(not(target_arch = "wasm32"), not(all(target_os = "linux", target_arch = "x86_64", target_env = "gnu"))))']
+# Keep native O3's loop optimizations while limiting growth from inlining.
+rustflags = ["-C", "llvm-args=--inline-threshold=100"]
+
+[target.x86_64-unknown-linux-gnu]
+# Rust's Linux linker is LLD. The address table permits safe folding of copies
+# generated in different crates while preserving observable function addresses.
+rustflags = ["-C", "llvm-args=--addrsig --inline-threshold=100", "-C", "link-arg=-Wl,--icf=safe"]
+
 [env]
 # Embedded numerical caches fingerprint the dependencies resolved by this host.
 RUSTFLOW_WORKSPACE_MANIFEST = { value = "Cargo.toml", relative = true }
