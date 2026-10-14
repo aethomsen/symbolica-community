@@ -39,6 +39,15 @@ await pyodide.loadPackage("micropip");
 const wheel = wheels[0];
 const wheelBytes = await readFile(join(wheelDir, wheel));
 pyodide.FS.writeFile(`/${wheel}`, wheelBytes);
+const resourceWheels = (await readdir(wheelDir)).filter((name) =>
+  (name.startsWith("symbolica_fonts-") || name.startsWith("symbolica_vakint_data-"))
+    && name.endsWith("-py3-none-any.whl"),
+);
+assert.equal(resourceWheels.length, 2, "Expected matching fonts and Vakint data wheels");
+for (const resourceWheel of resourceWheels) {
+  pyodide.FS.writeFile(`/${resourceWheel}`, await readFile(join(wheelDir, resourceWheel)));
+}
+pyodide.globals.set("resource_wheel_uris", resourceWheels.map((name) => `emfs:/${name}`));
 pyodide.globals.set("wheel_uri", process.env.SYMBOLICA_WHEEL_URL || `emfs:/${wheel}`);
 assert(!(process.env.SYMBOLICA_WHEEL_URL && process.env.SYMBOLICA_ZSTD_URL), "Choose one HTTP delivery mode");
 pyodide.globals.set("wheel_zstd_url", process.env.SYMBOLICA_ZSTD_URL || "");
@@ -61,9 +70,14 @@ if wheel_zstd_url:
     ))
     print(f"Downloaded zstd archive: {len(compressed)} bytes")
     del compressed
+await micropip.install(list(resource_wheel_uris))
 await micropip.install(wheel_uri)
 
-from symbolica import E, S, set_license_key
+from symbolica import E, S, data, set_license_key
+assert data.manifest()["bundle"] == "data"
+await data.prepare("render/fonts")
+assert all(asset["loaded"] for asset in data.manifest()["assets"]
+           if asset["name"].startswith("render/fonts/"))
 if os.environ.get("SYMBOLICA_LICENSE_KEY"):
     set_license_key(os.environ["SYMBOLICA_LICENSE_KEY"])
 assert E("(x+1)^2").expand() == E("x^2+2*x+1")
@@ -80,6 +94,15 @@ from symbolica import get_citations
 assert any(citation.id == "https://github.com/symbolica-dev/symbolica-integrate" for citation in get_citations())
 `);
 if (expectCommunity) {
+await pyodide.runPythonAsync(`
+from symbolica.community import hepkit as hep
+native_program = data.read("vakint/rustred/unit_mass_vacuum_k6.rrbin")
+loaded = hep.rustred.inspect_closing_artifact(native_program)
+assert loaded is not None
+reduced = hep.rustred.reduce_with_closing_artifact(native_program, [1] * 6)
+assert reduced.status == "reduced" and reduced.terms
+print("External data: fonts and native K6 artifact loaded and reduced in WASM.")
+`);
 pyodide.globals.set("rustred_k6_dot", await readFile(new URL("../../examples/hep/data/rustred_three_loop/k6.dot", import.meta.url), "utf8"));
 pyodide.globals.set("rustred_k6_source", await readFile(new URL("../../examples/hep/data/rustred_three_loop/k6.toml", import.meta.url), "utf8"));
 await pyodide.runPythonAsync(`
@@ -102,10 +125,13 @@ import numpy
 await pyodide.runPythonAsync(`
 import symbolica.community.tensor as tensor_module
 from symbolica.community import graph as graph_module, hepkit as hepkit_module
-for name in ("DiagramRender", "LayoutSettings", "StrokeStyle"):
+for name in ("DiagramRender", "LayoutSettings", "Stroke"):
     shared_type = getattr(graph_module, name)
     assert shared_type.__module__ == "symbolica.community.graph"
-    assert getattr(tensor_module, name) is getattr(hepkit_module, name) is shared_type
+# Current FeynKit keeps generic drawing types in their graph owner; physics
+# presentation is configured separately through HEPKit's DiagramStyle.
+rendered = hepkit_module.Model.phi3().process(["phi"], ["phi"]).render()
+assert type(rendered) is graph_module.DiagramRender
 from symbolica.community.tensor import Representation, Tensor, TensorExpression, TensorLibrary, TensorName, TensorNetwork, dot
 metric = TensorExpression(E("g(bis(4,1),bis(4,1))", default_namespace="spenso"))
 assert metric.simplify_algebra(contract="dots").to_expression() == E("4")
@@ -153,7 +179,7 @@ assert isinstance(diagram, hep.FeynmanDiagram) and diagram.loop_count == 1
 diagram.validate()
 restored = hep.FeynmanDiagram.from_json(model, diagram.to_json())
 assert restored.loop_count == 1
-cff = restored.build_cff()
+cff = restored.integrate_energy(method="cff")
 assert len(cff) > 0
 from symbolica import Expression
 assert isinstance(cff.to_expression(), Expression)
@@ -209,6 +235,10 @@ if (nativeArtifactPath) {
   console.log("Native64-to-WASM32 RustRed artifact: exact master list and 11 reductions passed.");
 }
 if (!rustredOnly) {
+await pyodide.runPythonAsync(`
+from symbolica.community.hep.integration import load_higgs_jet_data
+await load_higgs_jet_data()
+`);
 await pyodide.runPythonAsync(
   await readFile(new URL("./check_wasm_loop_transport.py", import.meta.url), "utf8"),
 );

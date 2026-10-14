@@ -60,17 +60,19 @@ ibp-runtime-arity-selection = ["rustred-feynkit?/runtime-arity-selection", "symb
 default = ["module", "native", "community"]
 module = ["pyo3/abi3-py39"] # incompatible with stub_gen
 community = [
+    "dep:linnet-py",
     "ibp-capacity-dispatch",
     "dep:spynso3", "dep:feynkit-py", "dep:one-loop-reduce-python",
     "dep:rustred-feynkit", "dep:oneloop-python", "dep:oneloop", "dep:vakint",
     "dep:hyperbolica", "dep:symbolica-amflow", "dep:fastsecdec-python",
 ]
 # Keep the system allocator: mimalloc can crash after Python's importing thread exits.
-native = ["hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native", "rustred-feynkit?/native", "symbolica-amflow?/python", "fastsecdec-python?/native"]
+native = ["linnet-py?/native", "hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native", "rustred-feynkit?/native", "symbolica-amflow?/python", "fastsecdec-python?/native"]
 # Use --no-default-features --features wasm-core for the kernel + integration only.
 wasm-core = ["symbolica/wasm"]
-wasm = ["wasm-core", "community", "hyperbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "rustred-feynkit/wasm", "one-loop-reduce-python/wasm", "symbolica-amflow/python_wasm", "fastsecdec-python?/portable"]
+wasm = ["wasm-core", "community", "linnet-py/wasm", "hyperbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "rustred-feynkit/wasm", "one-loop-reduce-python/wasm", "symbolica-amflow/python_wasm", "fastsecdec-python?/portable"]
 python_stubgen = [
+    "linnet-py/python_stubgen",
     "hyperbolica/python_stubgen",
     "native",
     "community",
@@ -85,6 +87,9 @@ python_stubgen = [
 ]
 
 [dependencies]
+linnet-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
+symbolica-data = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
+serde_json = "1"
 fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "dea66bfd116356092d3a68f19fdb77d2a6f55b25", default-features = false }
 hyperbolica = { optional = true, git = "https://github.com/benruijl/hyperbolica", rev = "31292085504b794dc444a006eba1d3013ed30944", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
@@ -107,8 +112,8 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
 oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false, features = ["community"] }
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
-# RustRed-enabled Vakint, with the same modern FeynKit tensor bridge as this host.
-vakint = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop", rev = "6203c6cbba6ae5e90329ba5081fad55319e678db", features = ["symbolica_community_module"] }
+# RustRed-enabled Vakint is independently pinned; its assets use the host loader.
+vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "ffd9a52e7e691c6e32bbb34f733422bc78152dd6", features = ["symbolica_community_module"] }
 
 # All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]

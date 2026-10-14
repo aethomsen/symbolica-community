@@ -13,6 +13,24 @@ permissions:
   contents: read
 
 jobs:
+  data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - uses: dtolnay/rust-toolchain@1.98.0
+      - name: Build external data bundle
+        run: python scripts/build_data_bundle.py --out dist --check-catalog
+      - name: Check distribution size
+        run: python scripts/check_distribution_size.py dist/*.whl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-data
+          path: |
+            dist/symbolica_fonts-*.whl
+            dist/symbolica_vakint_data-*.whl
   linux:
     runs-on: ${{ matrix.runner[0] }}
     strategy:
@@ -106,6 +124,7 @@ jobs:
           path: wheelhouse
   pyemscripten:
     runs-on: ubuntu-latest
+    needs: [data]
     env:
       PYODIDE_VERSION: "314.0.7"
       # Pyodide's default Rust 1.93 predates Symbolica's Rust 1.96 minimum.
@@ -141,6 +160,11 @@ jobs:
       - name: Compress wheel with zstd
         run: python scripts/compress_wheel_zstd.py dist/*-pyemscripten_2026_0_wasm32.whl
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-data
+          path: dist
+
       - name: Test installation with micropip
         env:
           SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE }}
@@ -159,7 +183,7 @@ jobs:
   publish:
     name: Publish to PyPI
     runs-on: ubuntu-latest
-    needs: [linux, macos, windows]
+    needs: [data, linux, macos, windows]
     if: inputs.publish == true
     steps:
       - uses: actions/checkout@v4
@@ -175,7 +199,7 @@ jobs:
           merge-multiple: true
 
       - name: Check core citation stub in source and wheels
-        run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
+        run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/symbolica-*.whl
 
       - name: Check distribution sizes
         run: python scripts/check_distribution_size.py dist/*
@@ -191,7 +215,7 @@ jobs:
   publish_pyemscripten:
     name: Publish PyEmscripten to PyPI
     runs-on: ubuntu-latest
-    needs: [pyemscripten]
+    needs: [data, pyemscripten]
     if: inputs.publish == true
     steps:
       - uses: actions/checkout@v4
@@ -205,8 +229,13 @@ jobs:
           name: pyemscripten-wheels-2026-wasm32
           path: dist
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-data
+          path: dist
+
       - name: Check core citation stub in source and wheels
-        run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
+        run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/symbolica-*.whl
 
       - name: Check distribution sizes
         run: python scripts/check_distribution_size.py dist/*

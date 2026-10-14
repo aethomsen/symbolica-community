@@ -1,0 +1,153 @@
+"""Prepare verified external resources before synchronous native/WASM operations."""
+
+from __future__ import annotations
+
+import asyncio
+import importlib
+import importlib.util
+import json
+import os
+import sys
+import tempfile
+from pathlib import Path
+from urllib.request import urlopen
+
+from . import core
+
+_directories: tuple[Path, ...] = ()
+
+
+def manifest() -> dict:
+    """Describe the resources expected by this engine, including loaded status."""
+    return json.loads(core._data_manifest())
+
+
+def set_directory(directory: str | os.PathLike[str]) -> None:
+    """Use an extracted bundle; payloads remain unloaded until first needed."""
+    set_directories(directory)
+
+
+def set_directories(*directories: str | os.PathLike[str]) -> None:
+    """Search several extracted resource bundles without copying their files."""
+    global _directories
+    _directories = tuple(Path(directory) for directory in directories)
+    core._set_data_directories([str(directory) for directory in _directories])
+
+
+def configure() -> None:
+    """Locate the installed data distribution without reading large resources."""
+    if directory := os.environ.get("SYMBOLICA_DATA_DIRECTORY"):
+        set_directories(*directory.split(os.pathsep))
+    else:
+        set_directories(
+            *(
+                importlib.import_module(module).directory()
+                for module in ("symbolica_fonts", "symbolica_vakint_data")
+                if importlib.util.find_spec(module) is not None
+            )
+        )
+
+
+def install(name: str, payload: bytes) -> None:
+    """Supply one resource; Rust checks its exact size and pinned checksum."""
+    core._install_data_asset(name, payload)
+
+
+def read(name: str) -> bytes:
+    """Read verified bytes, including native-produced RustRed assets in WASM."""
+    return core._read_data_asset(name)
+
+
+async def prepare(
+    *datasets: str,
+    source: str | os.PathLike[str] | None = None,
+    cache_dir: str | os.PathLike[str] | None = None,
+) -> None:
+    """Load named resources or prefixes from a directory or HTTP asset mirror.
+
+    No download occurs during import or mathematical computation. Browser hosts
+    may mount persistent storage at ``cache_dir``; the default browser cache is
+    session-local. With no dataset arguments, prepare all resources supported
+    by this particular native/WASM engine.
+    """
+    records = manifest()["assets"]
+    for dataset in datasets:
+        if not any(
+            record["name"] == dataset
+            or record["name"].startswith(dataset.rstrip("/") + "/")
+            for record in records
+        ):
+            raise ValueError(f"unknown or unsupported dataset: {dataset}")
+    pending = [
+        record
+        for record in records
+        if not record["loaded"]
+        and (
+            not datasets
+            or any(
+                record["name"] == dataset
+                or record["name"].startswith(dataset.rstrip("/") + "/")
+                for dataset in datasets
+            )
+        )
+    ]
+    if not pending:
+        return
+    roots = _directories if source is None else (Path(source),)
+    source = "" if source is None else os.fspath(source)
+    remote = source.startswith(("https://", "http://"))
+    directory = (
+        Path(cache_dir)
+        if cache_dir is not None
+        else (
+            Path("/tmp/symbolica-data")
+            if sys.platform == "emscripten"
+            else Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+            / "symbolica"
+            / "data"
+        )
+    )
+    directory.mkdir(parents=True, exist_ok=True)
+    # Limit simultaneous transfers and WASM memory copies for large programs.
+    for record in pending:
+        name = record["name"]
+        cached = directory / record["sha256"]
+        if cached.exists():
+            try:
+                install(name, cached.read_bytes())
+                continue
+            except ValueError:
+                cached.unlink()
+        if remote:
+            url = source.rstrip("/") + "/" + name
+            if sys.platform == "emscripten":
+                from pyodide.http import pyfetch
+
+                response = await pyfetch(url)
+                response.raise_for_status()
+                payload = await response.bytes()
+            else:
+
+                def download(url=url, size=record["size"]):
+                    with urlopen(url, timeout=60) as response:
+                        return response.read(size + 1)
+
+                payload = await asyncio.to_thread(download)
+        else:
+            path = next(
+                (root / name for root in roots if (root / name).is_file()), None
+            )
+            if path is None:
+                raise FileNotFoundError(
+                    f"Install the resource wheel or supply a source for {name}"
+                )
+            with path.open("rb") as stream:
+                payload = stream.read(record["size"] + 1)
+        install(name, payload)
+        with tempfile.NamedTemporaryFile(dir=directory, delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(payload)
+        try:
+            temporary.replace(cached)
+        finally:
+            temporary.unlink(missing_ok=True)
