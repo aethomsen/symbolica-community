@@ -15,7 +15,7 @@ HEPKIT = (
     "idenso", "spynso3", "symbolica-utils",
 )
 OPTIONAL_HEPKIT = (
-    "gammaloop-workspace-hack", "linnest", "linnet-py", "typst-renderer",
+    "gammaloop-workspace-hack", "linnest", "linnet-render-py", "typst-renderer",
     "three-dimensional-reps", "kurvst",
 )
 RUSTRED = ("rustred", "rustred-order", "rustred-app", "rustred-feynkit", "rustred-python")
@@ -118,6 +118,7 @@ def check_graph(label, packages, nodes, root, *, community, native):
     symbolica = singleton(packages, "symbolica")
     assert "faster_alloc" not in nodes[symbolica["id"]]["features"], "host allocator policy changed"
     names = {p["name"] for p in packages}
+    assert "linnet-py" not in names, (label, "generic Linnet Python API in host")
     if not community:
         forbidden = (*HEPKIT, *OPTIONAL_HEPKIT, "hyperbolica", "symbolica-amflow", *RUSTRED, *NATIVE_ONLY)
         assert not names.intersection(forbidden), (

@@ -36,8 +36,14 @@ import pytest
         ("symbolica.community.hepkit.oneloop", {"Reduction", "MasterIntegral"}),
         (
             "symbolica.community.hepkit.sector_decomposition",
-            {"Integral", "GeneratedIntegral", "GenerationSession", "Kernels",
-             "CompilationSettings", "FormulaPreparationSnapshot"},
+            {
+                "Integral",
+                "GeneratedIntegral",
+                "GenerationSession",
+                "Kernels",
+                "CompilationSettings",
+                "FormulaPreparationSnapshot",
+            },
         ),
         (
             "symbolica.community.hepkit.vakint",
@@ -107,6 +113,36 @@ def test_tensor_evaluator_stub_matches_loaded_signature():
     )
     declared = [arg.arg for arg in evaluator.args.posonlyargs + evaluator.args.args]
     assert declared == list(inspect.signature(tensor.Tensor.evaluator).parameters)
+
+
+def test_graph_package_is_display_only():
+    from symbolica.community import graph
+
+    generic_api = {
+        "Graph",
+        "Node",
+        "Edge",
+        "HalfEdge",
+        "Subgraph",
+        "Cycle",
+        "OrientedCut",
+        "TraversalTree",
+        "DotCodec",
+        "LayoutStream",
+        "build",
+        "node",
+        "edge",
+        "source",
+        "sink",
+    }
+    assert not generic_api.intersection(vars(graph))
+    declarations = ast.parse(Path(graph.__file__).with_suffix(".pyi").read_text())
+    stub_exports = {
+        node.name
+        for node in declarations.body
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef))
+    }
+    assert not generic_api.intersection(stub_exports)
 
 
 def test_graph_presentation_types_are_shared_by_both_renderers():

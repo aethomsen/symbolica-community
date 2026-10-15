@@ -45,7 +45,10 @@ fn main() -> Result<()> {
             .ok_or_else(|| {
                 std::io::Error::other("Graph rendering did not register stub metadata")
             })?;
-        write_package("symbolica.community.graph", &linnet_py::canonical_stub()?)?;
+        write_package(
+            "symbolica.community.graph",
+            &linnet_render_py::canonical_stub()?,
+        )?;
     }
     if only.is_none() || only == Some("hepkit") {
         let numerical = stub
