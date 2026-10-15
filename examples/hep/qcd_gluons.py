@@ -85,12 +85,12 @@ def _(mo):
 
 @app.cell
 def _(E, Kinematics, S, hep, qcd_model, sp):
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     s, t, u = S("s", "t", "u")
     mass = qcd_model.particle("b").mass
     gs = qcd_model.parameter("G").symbol
     Nc, dA, _cof, _coad = (
-        sp.Nc,
+        sp.Nc(),
         S("dA"),
         sp.Representation.cof,
         sp.Representation.coad,
@@ -173,7 +173,7 @@ def _(
         kinematics.apply(
             diagram.denominator_expression(dimension=4, in_lmb=True)
             .to_expression()
-            .replace(Symbols.denominator(a, b, c, inverse), inverse)
+            .replace(Symbols.denominator()(a, b, c, inverse), inverse)
         ).expand()
         for diagram in gluon_generated.diagrams
     ]
@@ -182,7 +182,7 @@ def _(
     operator = kinematics.apply(
         gluon_generated.expression().rename_indices(_port_map)
     ).expand()
-    assert len(operator.structure.slots) == 8
+    assert len(operator.structure.slots()) == 8
     return (operator,)
 
 
@@ -262,7 +262,7 @@ def _(E, S, bra_ports, operator, ports, qcd_model, sp):
         if _position < 2:
             initial_colors *= abs(_particle.color)
         _matches = []
-        for _slot in operator.structure.slots:
+        for _slot in operator.structure.slots():
             _original = _slot.to_expression()
             if _original.replace(ports[_position], E("0")) == _original:
                 continue

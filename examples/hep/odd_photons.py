@@ -115,8 +115,8 @@ def _(S, hep, model, photons, sp):
     assert len(vertices) == 1
     D = S("D")
     K, P, mink = (
-        hep.Kinematics.loop_momentum,
-        hep.Kinematics.external_momentum,
+        hep.Kinematics.loop_momentum(),
+        hep.Kinematics.external_momentum(),
         sp.Representation.mink,
     )
     generated = model.process(

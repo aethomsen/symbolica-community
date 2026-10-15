@@ -684,7 +684,7 @@ class ProductionNumerator:
         # Q is registered by the combined host, including its display metadata.
         TensorName.dirac_gamma()
         TensorName.color_t()
-        Representation.mink(Symbols.dimension)
+        Representation.mink(Symbols.dimension())
         Representation.bis(4)
         Representation.cof(3)
         Representation.coad(8)
@@ -737,7 +737,7 @@ class ProductionNumerator:
         }
         slots = [
             slot.to_expression().replace(dimension, E("4")).format_plain()
-            for slot in self.source.structure.slots
+            for slot in self.source.structure.slots()
         ]
         assert len(slots) == 4 and len(set(slots)) == 4
         report = {
@@ -780,7 +780,7 @@ class ProductionNumerator:
                 tensor = network.result_tensor(library=library)
                 actual_slots = [
                     slot.to_expression().format_plain()
-                    for slot in tensor.structure.slots
+                    for slot in tensor.structure.slots()
                 ]
                 assert len(actual_slots) == 4 and set(actual_slots) == set(slots)
                 axes = [actual_slots.index(slot) for slot in slots]

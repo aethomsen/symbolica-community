@@ -227,15 +227,15 @@ def _(E, Model, S, Symbols, json, sp):
             propagator["numerator"] = (
                 E("-1𝑖")
                 * (
-                    Symbols.ufo_metric(Symbols.ufo_index(1, 1), Symbols.ufo_index(1, 2))
+                    Symbols.ufo_metric()(Symbols.ufo_index()(1, 1), Symbols.ufo_index()(1, 2))
                     - (1 - S("xi"))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 1))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 2))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 1))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 2))
                     / sp.TensorName.g().to_expression()(
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
                     )
@@ -267,13 +267,13 @@ def _(E, S, Symbols, hep, model, sp):
         "dA",
     )
     CA = sp.Representation.coad(dA).casimir()
-    K, P = hep.Kinematics.loop_momentum, hep.Kinematics.external_momentum
+    K, P = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     gs = model.parameter("G").symbol
     mink, coad, metric, hedge, f = (
         sp.Representation.mink,
         sp.Representation.coad,
         sp.TensorName.g().to_expression(),
-        Symbols.half_edge,
+        Symbols.half_edge(),
         sp.TensorName.color_f().to_expression(),
     )
     idx, dim, a, b, c, arguments = S(
@@ -285,7 +285,7 @@ def _(E, S, Symbols, hep, model, sp):
         "arguments___",
     )
     den, ed, mom, ms, quad = (
-        Symbols.denominator,
+        Symbols.denominator(),
         S("ed_"),
         S("mom_"),
         S("ms_"),

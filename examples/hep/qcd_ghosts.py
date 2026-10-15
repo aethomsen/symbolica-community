@@ -102,12 +102,12 @@ def _(
                 _edge = _half.edge
                 if _edge.is_external:
                     _numerator = sp.TensorExpression(_numerator).rename_indices(
-                        {Symbols.half_edge(_half.id, 1): _ports[_edge.external_index]}
+                        {Symbols.half_edge()(_half.id, 1): _ports[_edge.external_index]}
                     )
             _denominator = kinematics.apply(
                 _diagram.denominator_expression(dimension=4, in_lmb=True)
                 .to_expression()
-                .replace(Symbols.denominator(_a, _b, _c, _inverse), _inverse)
+                .replace(Symbols.denominator()(_a, _b, _c, _inverse), _inverse)
             ).expand()
             _denominators.append(_denominator)
             _amplitude += (
@@ -121,7 +121,7 @@ def _(
             for _d in ((s, t - mass**2, u - mass**2) if _count == 3 else (s,))
         )
         _operator = _amplitude.expand()
-        assert len(_operator.structure.slots) == (8 if _count == 3 else 6)
+        assert len(_operator.structure.slots()) == (8 if _count == 3 else 6)
         _adjoint = (
             _operator.dirac_adjoint()
             .simplify_algebra(
@@ -158,7 +158,7 @@ def _(
             if _position < 2:
                 _initial_colors *= abs(_particle.color)
             _matches = []
-            for _slot in _operator.structure.slots:
+            for _slot in _operator.structure.slots():
                 _original = _slot.to_expression()
                 if _original.replace(_ports[_position], E("0")) == _original:
                     continue
@@ -282,12 +282,12 @@ def _(mo):
 
 @app.cell
 def _(E, Kinematics, S, ghost_model, hep, sp):
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     s, t, u = S("s", "t", "u")
     mass = ghost_model.particle("b").mass
     gs = ghost_model.parameter("G").symbol
     Nc, dA, cof, coad = (
-        sp.Nc,
+        sp.Nc(),
         S("dA"),
         sp.Representation.cof,
         sp.Representation.coad,

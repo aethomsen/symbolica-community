@@ -72,7 +72,7 @@ def _(mo):
 @app.cell
 def _(E, Model, S, hep):
     model = Model.standard_model()
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     charge = -model.particle("e-").electric_charge
     sw = model.parameter("sw").symbol
     mw = model.particle("W+").mass
@@ -141,7 +141,9 @@ def _(amplitudes):
                 .sum_spins(average_initial=True)
                 .sum_colors(average_initial=_convention == "Physical")
             )
-            _scalar = _summed.expression().simplify_algebra(contract="dots", **settings)
+            _scalar = (
+                _summed.expression().expand().simplify_algebra(contract="dots", **settings)
+            )
             assert _scalar.is_scalar
             model_squares[_label, _convention] = _scalar.to_expression().together()
     return (model_squares,)
@@ -209,11 +211,11 @@ def _(
                 _ckm = model.parameter(_ckm_name).symbol
                 _conj = sp.BroadcastFunction.conj().to_expression()
                 _square = _square.replace(
-                    _conj(Symbols.model_conjugate(_ckm)), Vr + Symbol.I * Vi
+                    _conj(Symbols.model_conjugate()(_ckm)), Vr + Symbol.I * Vi
                 )
                 _square = _square.replace(_conj(_ckm), Vr - Symbol.I * Vi)
                 _square = _square.replace(
-                    Symbols.model_conjugate(_ckm), Vr - Symbol.I * Vi
+                    Symbols.model_conjugate()(_ckm), Vr - Symbol.I * Vi
                 ).replace(_ckm, Vr + Symbol.I * Vi)
             physical_squares[_label, _convention] = (
                 _square.replace(charge**2, 4 * E("2").sqrt() * GF * mw**2 * sw**2)

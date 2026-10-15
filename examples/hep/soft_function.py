@@ -160,7 +160,7 @@ def _(
             _edge = _half.edge
             if _edge.is_external:
                 _numerator = _numerator.replace(
-                    Symbols.half_edge(_half.id, 1),
+                    Symbols.half_edge()(_half.id, 1),
                     ports[_edge.external_index],
                 )
         _numerator = (
@@ -169,7 +169,7 @@ def _(
         _denominator = (
             _diagram.denominator_expression(dimension=D, in_lmb=True)
             .to_expression()
-            .replace(Symbols.denominator(a, b, c, inv), inv)
+            .replace(Symbols.denominator()(a, b, c, inv), inv)
             .replace(model.particle("b").mass, zero)
         )
         # Expand the dot products before substituting linear vector combinations.
@@ -232,7 +232,7 @@ def _(E, Kinematics, Model, S, TensorName, hep, sp):
         in [sorted(["b", "b~", "a"]), sorted(["b", "b~", "g"])]
     ]
     assert len(vertices) == 2
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     D, Q, Qbar, kp, km, lam = S("D", "Q", "Qbar", "kp", "km", "lam")
     # Rank-one declarations let Spenso recognize contracted vectors and slashes.
     n, nb, k, ref = [
@@ -580,9 +580,10 @@ def _(
         Representation.cof(3), Representation.cof(3).dual()
     )(ports[2], ports[1]).to_expression()
     current = (born / color_identity).together()
-    generator = TensorExpression.color_t(8, 3)(
-        ports[3], ports[2], ports[1]
-    ).to_expression()
+    generator = reduce_collinear(
+        TensorExpression.color_t(8, 3)(ports[3], ports[2], ports[1]).to_expression(),
+        kinematics=kin,
+    )
     gs = model.parameter("G").symbol
     # The generated convention gives a common minus relative to the reference's
     # emission current. Its relative quark/antiquark sign and square agree.

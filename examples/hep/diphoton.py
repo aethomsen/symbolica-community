@@ -101,10 +101,10 @@ def _(amplitude):
 @app.cell
 def _(Kinematics, N, electron):
     s, t, u, P = (
-        Kinematics.s,
-        Kinematics.t,
-        Kinematics.u,
-        Kinematics.external_momentum,
+        Kinematics.s(),
+        Kinematics.t(),
+        Kinematics.u(),
+        Kinematics.external_momentum(),
     )
 
     mass, charge = electron.mass, electron.electric_charge

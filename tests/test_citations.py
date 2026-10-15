@@ -8,11 +8,19 @@ import textwrap
 import pytest
 
 
-@pytest.mark.parametrize("operation", ["import", "ordinary", "kinematic", "higgs", "model", "projector", "automatic"])
-def test_numerical_transport_citations_are_usage_gated_and_cumulative(operation):
+@pytest.mark.parametrize(
+    "operation",
+    ["import", "ordinary", "kinematic", "higgs", "model", "projector", "automatic"],
+)
+def test_numerical_transport_citations_are_usage_gated_and_cumulative(
+    operation, higgs_jet_data
+):
     """Each case starts with a fresh native registry; no test-only reset exists."""
     result = subprocess.run(
-        [sys.executable, "-c", textwrap.dedent("""
+        [
+            sys.executable,
+            "-c",
+            textwrap.dedent("""
             import sys
             from symbolica import E, S, get_citations
             from symbolica.community import hepkit as hep
@@ -35,6 +43,10 @@ def test_numerical_transport_citations_are_usage_gated_and_cumulative(operation)
             except integration.InvalidInputError:
                 pass
             assert not all_ids & citations().keys()
+            if operation != 'import':
+                import asyncio
+                asyncio.run(integration.load_higgs_jet_data(form_factors=True, cache_dir=sys.argv[2]))
+                assert not all_ids & citations().keys()
             expected = set()
             if operation == 'ordinary':
                 integration.DifferentialSystem(S('citation_x'), [[E('0')]])
@@ -86,7 +98,10 @@ def test_numerical_transport_citations_are_usage_gated_and_cumulative(operation)
                 assert all_ids & accumulated.keys() == expected
                 for identifier in first.keys() & all_ids:
                     assert set(first[identifier].reasons) <= set(accumulated[identifier].reasons)
-        """), operation],
+        """),
+            operation,
+            str(higgs_jet_data),
+        ],
         capture_output=True,
         text=True,
         timeout=90,

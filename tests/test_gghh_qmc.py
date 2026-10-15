@@ -26,8 +26,7 @@ directory = sys.argv[1]
 old_app = runpy.run_path(directory + '/gghh.py')['app']
 _, old = old_app.run()
 _, current = runpy.run_path(directory + '/gghh_complete.py')['app'].run()
-inputs, science = current['gghh_inputs'], current['science']
-catalogue = inputs.catalogue(progress=None)
+catalogue = current['gghh_catalogue'](progress=None)
 if sys.argv[2] == 'triangle':
     # Retain the explicit reducible-graph branch regression independently of
     # the complete notebook catalogue's default selection.
@@ -52,10 +51,6 @@ def integrate(kernels):
     return result
 
 point = {'sqrt_s': 300, 'higgs_mass': 125, 'cos_theta': 0.8, 'top_mass': 172.5}
-topology = dict(old)
-selection_cell = next(cell for _, cell in old_app._cell_manager.valid_cells()
-                      if 'is_double_box' in cell.defs)
-exec(selection_cell._cell.code, topology)
 if sys.argv[2] == 'triangle':
     raws = [next(raw for raw in catalogue.diagrams
                  if sum(abs(edge.particle.pdg_code) == 6 for edge in raw.internal_edges) == 3
@@ -67,20 +62,22 @@ else:
                and len(raw.internal_edges) == 4
                and all(abs(edge.particle.pdg_code) == 6 for edge in raw.internal_edges))
     raws = [box,
-            next(raw for raw in catalogue.diagrams if topology['is_double_box'](raw))]
+            next(raw for raw in catalogue.diagrams if old['is_double_box'](raw))]
     assert raws[0].loop_count == 1 and raws[1].loop_count == 2
     assert len(raws[0].internal_edges) == 4
     assert all(abs(edge.particle.pdg_code) == 6 for edge in raws[0].internal_edges)
 for raw in raws:
     assert all(edge.momentum_expression(in_lmb=True) != E('0') for edge in raw.internal_edges)
-    prepared = inputs.prepare(source=catalogue, selected=raw.id)
+    prepared = current['gghh_prepare'](source=catalogue, selected=raw.id)
     assert prepared.simplified_numerator != E('0')
-    generated = science.generation(prepared, {'max_order': 0})
+    generated = current['science_generation'](prepared, {'max_order': 0})
     assert generated.mode == 'symbolic' and generated.subtraction == 'taylor'
     while not generated.complete:
-        generated.step(max_units=1)
+        # This is a numerical comparison; batch work instead of copying a
+        # progress snapshot after every individual two-loop mapping operation.
+        generated.step(max_units=128)
     template = sd.Kernels.from_bytes(generated.kernels.to_bytes())
-    kernels, _ = science.bind(generated.generated, template, prepared, point)
+    kernels, _ = current['science_bind'](generated.generated, template, prepared, point)
     runtime_mean = integrate(kernels)
 
     # Run the original notebook's numeric contraction on the identical graph,
@@ -114,7 +111,7 @@ for raw in raws:
 
     if raw.loop_count == 1:
         changed = dict(point, sqrt_s=320, cos_theta=0.4)
-        rebound, _ = science.bind(
+        rebound, _ = current['science_bind'](
             generated.generated, template, prepared, changed)
         assert integrate(rebound) != runtime_mean
 """
@@ -123,6 +120,8 @@ for raw in raws:
         cwd=root,
         capture_output=True,
         text=True,
-        timeout=300,
+        # The 1PI case generates and compiles both symbolic and fixed-point
+        # two-loop integrals in the development build, as well as the box.
+        timeout=900 if topology == "1pi" else 300,
     )
     assert result.returncode == 0, result.stdout + result.stderr

@@ -1,12 +1,16 @@
 import marimo
 
-__generated_with = "0.24.2"
-app = marimo.App(width="medium", app_title="FastSecDec · from graph to Laurent vector")
+__generated_with = "0.25.1"
+app = marimo.App(
+    width="medium",
+    app_title="FastSecDec · from graph to Laurent vector",
+)
 
 
 @app.cell(hide_code=True)
 def _():
     import marimo as mo
+
     return (mo,)
 
 
@@ -95,15 +99,84 @@ async def _(mo):
     from showcase import state as workflow, generation, integration, sectors, presentation, report
     from showcase import gghh as gghh_builder
     from symbolica.community import hepkit as hep
-    return asset_description, browser_runtime, builders, gghh_builder, interrupt_isolated, workflow, generation, integration, sectors, presentation, report
+
+    return (
+        asset_description,
+        browser_runtime,
+        builders,
+        generation,
+        gghh_builder,
+        integration,
+        interrupt_isolated,
+        presentation,
+        report,
+        sectors,
+        workflow,
+    )
 
 
-@app.cell
-def _(mo):
+@app.cell(hide_code=True)
+def _():
     # The canonical HEPKit API. Importing it starts no scientific work.
     from symbolica.community.hepkit import sector_decomposition as sd
-    mo.show_code()
+
     return (sd,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Setup and notebook helpers
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(sd):
+    def decompose_input(prepared, max_order, observer):
+        # Native diagram, kinematics and Symbolica values are passed directly.
+        diagram = prepared.diagram
+        arguments = dict(prepared.integral_arguments())
+        for name in ("diagram", "kinematics", "regulator", "dimension"):
+            arguments.pop(name)
+        generation_options = getattr(prepared, "generation_arguments", lambda: {})()
+        return diagram.sector_decompose(
+            kinematics=prepared.kinematics,
+            regulator=prepared.regulator,
+            dimension=prepared.dimension,
+            max_order=max_order, observer=observer,
+            **arguments, **generation_options,
+        )
+
+    def compile_sectors(generated, observer):
+        # Compilation completes before Integrate can create a session.
+        return generated.compile(observer=observer)
+
+    def create_session(kernels, configuration):
+        if configuration.get("method", "qmc") == "havana_discrete_mc":
+            settings = sd.HavanaDiscreteSettings(
+                points_per_batch=configuration["pilot_points"],
+                batches=configuration["pilot_batches"],
+                seed=configuration["seed"], bins=configuration["bins"],
+                minimum_probability_density=configuration["minimum_probability_density"],
+                maximum_sector_probability_ratio=configuration["maximum_sector_probability_ratio"],
+            )
+            # The pilot is trained explicitly, then frozen into production.
+            return kernels.mc_session(settings, pilot=True)
+        settings = sd.QmcSettings(
+            points=configuration["points"], shifts=configuration["shifts"],
+            seed=configuration["seed"], package_points=configuration["package_points"],
+            rule=configuration["rule"], periodization=configuration.get("periodization", "korobov3"),
+        )
+        return kernels.session(settings)
+
+    def advance_session(session, method):
+        # The notebook owns the loop; each active refresh accepts at most one unit.
+        if method == "havana_discrete_mc":
+            return session.step(max_batches=1)
+        return session.step(max_packages=1)
+
+    return advance_session, compile_sectors, create_session, decompose_input
 
 
 @app.cell(hide_code=True)
@@ -121,7 +194,7 @@ def _(browser_runtime, mo, problem):
     if problem.value == "gghh":
         _input_panel = mo.vstack([
             mo.md(r"""### $gg\to HH$ · fixed physical point
-One HEPKit-generated top double box with an internal gluon and $(+,+)$ helicities. This single projected diagram is not the full gauge-invariant amplitude."""),
+    One HEPKit-generated top double box with an internal gluon and $(+,+)$ helicities. This single projected diagram is not the full gauge-invariant amplitude."""),
             mo.hstack([
                 mo.stat(label="Energy √s", value="300 GeV"), mo.stat(label="Higgs mass", value="125 GeV"),
                 mo.stat(label="Top mass", value="172.5 GeV"), mo.stat(label="cos θ", value="4/5"),
@@ -171,7 +244,13 @@ def _(integration_method, mo, problem):
 
 
 @app.cell(hide_code=True)
-def _(allocation_preset, browser_runtime, integration_method, mo, presentation):
+def _(
+    allocation_preset,
+    browser_runtime,
+    integration_method,
+    mo,
+    presentation,
+):
     _preset = presentation.QMC_PRESETS[allocation_preset.value]
     _points = {f"{value:,}": value for value in (1024, 4096, 16384, 32768, 65536)}
     _shifts = {str(value): value for value in (4, 8, 16, 32, 64)}
@@ -235,61 +314,6 @@ def _(mo):
     return
 
 
-@app.cell
-def _(mo):
-    def decompose_input(prepared, max_order, observer):
-        # Native diagram, kinematics and Symbolica values are passed directly.
-        diagram = prepared.diagram
-        arguments = dict(prepared.integral_arguments())
-        for name in ("diagram", "kinematics", "regulator", "dimension"):
-            arguments.pop(name)
-        generation_options = getattr(prepared, "generation_arguments", lambda: {})()
-        return diagram.sector_decompose(
-            kinematics=prepared.kinematics,
-            regulator=prepared.regulator,
-            dimension=prepared.dimension,
-            max_order=max_order, observer=observer,
-            **arguments, **generation_options,
-        )
-
-    def compile_sectors(generated, observer):
-        # Compilation completes before Integrate can create a session.
-        return generated.compile(observer=observer)
-
-    mo.show_code()
-    return compile_sectors, decompose_input
-
-
-@app.cell
-def _(mo, sd):
-    def create_session(kernels, configuration):
-        if configuration.get("method", "qmc") == "havana_discrete_mc":
-            settings = sd.HavanaDiscreteSettings(
-                points_per_batch=configuration["pilot_points"],
-                batches=configuration["pilot_batches"],
-                seed=configuration["seed"], bins=configuration["bins"],
-                minimum_probability_density=configuration["minimum_probability_density"],
-                maximum_sector_probability_ratio=configuration["maximum_sector_probability_ratio"],
-            )
-            # The pilot is trained explicitly, then frozen into production.
-            return kernels.mc_session(settings, pilot=True)
-        settings = sd.QmcSettings(
-            points=configuration["points"], shifts=configuration["shifts"],
-            seed=configuration["seed"], package_points=configuration["package_points"],
-            rule=configuration["rule"], periodization=configuration.get("periodization", "korobov3"),
-        )
-        return kernels.session(settings)
-
-    def advance_session(session, method):
-        # The notebook owns the loop; each active refresh accepts at most one unit.
-        if method == "havana_discrete_mc":
-            return session.step(max_batches=1)
-        return session.step(max_packages=1)
-
-    mo.show_code()
-    return advance_session, create_session
-
-
 @app.cell(hide_code=True)
 def _(mo, workflow):
     run_state = workflow.RunState(message="Choose the input, then Generate. No scientific work starts automatically.")
@@ -301,7 +325,18 @@ def _(mo, workflow):
     resume_button = mo.ui.button(value=0, on_click=lambda n: n+1, label="Resume")
     adapt_button = mo.ui.button(value=0, on_click=lambda n: n+1, label="Adapt another pilot")
     freeze_button = mo.ui.button(value=0, on_click=lambda n: n+1, label="Freeze production", kind="success")
-    return adapt_button, cancel_button, freeze_button, generate_button, get_sampling_active, integrate_button, new_integration_button, resume_button, run_state, set_sampling_active
+    return (
+        adapt_button,
+        cancel_button,
+        freeze_button,
+        generate_button,
+        get_sampling_active,
+        integrate_button,
+        new_integration_button,
+        resume_button,
+        run_state,
+        set_sampling_active,
+    )
 
 
 @app.cell(hide_code=True)
@@ -313,7 +348,19 @@ def _(get_sampling_active, mo):
 
 
 @app.cell(hide_code=True)
-def _(adapt_button, browser_runtime, cancel_button, freeze_button, generate_button, integrate_button, interrupt_isolated, mo, new_integration_button, refresh, resume_button):
+def _(
+    adapt_button,
+    browser_runtime,
+    cancel_button,
+    freeze_button,
+    generate_button,
+    integrate_button,
+    interrupt_isolated,
+    mo,
+    new_integration_button,
+    refresh,
+    resume_button,
+):
     mo.vstack([
         mo.md("## 2 · Generate → inspect → integrate"),
         mo.hstack([generate_button, integrate_button, cancel_button, resume_button, new_integration_button], justify="start", wrap=True),
@@ -337,7 +384,30 @@ def _(adapt_button, browser_runtime, cancel_button, freeze_button, generate_butt
 
 
 @app.cell(hide_code=True)
-def _(adapt_button, advance_session, allocation_controls, builders, cancel_button, compile_sectors, create_session, decompose_input, draft, freeze_button, generate_button, generation, gghh_builder, integrate_button, integration, mo, new_integration_button, presentation, refresh, resume_button, run_state, sd, set_sampling_active):
+def _(
+    adapt_button,
+    advance_session,
+    allocation_controls,
+    builders,
+    cancel_button,
+    compile_sectors,
+    create_session,
+    decompose_input,
+    draft,
+    freeze_button,
+    generate_button,
+    generation,
+    gghh_builder,
+    integrate_button,
+    integration,
+    mo,
+    new_integration_button,
+    presentation,
+    refresh,
+    resume_button,
+    run_state,
+    set_sampling_active,
+):
     _was_active = run_state.active
     _actions = {"generate": generate_button.value, "integrate": integrate_button.value,
                 "cancel": cancel_button.value, "resume": resume_button.value,
@@ -418,11 +488,31 @@ def _(mo):
     inspect_button = mo.ui.button(value=0, on_click=lambda n: n+1, label="Inspect sector")
     numerator_button = mo.ui.button(value=0, on_click=lambda n: n+1, label="Inspect weighted numerator")
     mo.vstack([mo.hstack([sector_index, coefficient_index, alias_page, chart_index, term_index], justify="start", wrap=True), mo.hstack([inspect_button, numerator_button], justify="start", wrap=True)])
-    return alias_page, chart_index, coefficient_index, inspect_button, numerator_button, sector_index, term_index
+    return (
+        alias_page,
+        chart_index,
+        coefficient_index,
+        inspect_button,
+        numerator_button,
+        sector_index,
+        term_index,
+    )
 
 
 @app.cell(hide_code=True)
-def _(alias_page, chart_index, coefficient_index, inspect_button, mo, numerator_button, run_revision, run_state, sector_index, sectors, term_index):
+def _(
+    alias_page,
+    chart_index,
+    coefficient_index,
+    inspect_button,
+    mo,
+    numerator_button,
+    run_revision,
+    run_state,
+    sector_index,
+    sectors,
+    term_index,
+):
     run_revision
     _actions = {"inspect": inspect_button.value, "numerator": numerator_button.value}
     _changed = {key for key, value in _actions.items() if value != run_state.seen[key]}
@@ -491,7 +581,7 @@ def _(mo, run_revision):
         mo.download("\n\n".join(citation.to_bibtex() for citation in citations).encode(),
                     filename="fastsecdec-references.bib", label="Download BibTeX"),
     ])
-    return (citations,)
+    return
 
 
 if __name__ == "__main__":

@@ -136,7 +136,7 @@ def _(E, TensorExpression, epsilon_diagrams, epsilon_model, mo):
     ]
     epsilon_norms = []
     for _color in epsilon_colors:
-        assert len(_color.structure.slots) == 3
+        assert len(_color.structure.slots()) == 3
         _conjugate = _color.dirac_adjoint()
         assert _conjugate.dirac_adjoint().to_expression() == _color.to_expression()
         # Explicit matching indices contract the tensor with its dual conjugate.

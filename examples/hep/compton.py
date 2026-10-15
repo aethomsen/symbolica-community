@@ -75,7 +75,7 @@ def _(mo):
 
 @app.cell
 def _(E, S, hep, qed_model):
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     s, t, u = S("s", "t", "u")
     electron = qed_model.particle("e-")
     mass, charge = electron.mass, -electron.electric_charge

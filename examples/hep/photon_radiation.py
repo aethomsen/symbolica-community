@@ -124,12 +124,12 @@ def _(
                 edge = half.edge
                 if edge.is_external:
                     numerator = sp.TensorExpression(numerator).rename_indices(
-                        {Symbols.half_edge(half.id, 1): ports[edge.external_index]}
+                        {Symbols.half_edge()(half.id, 1): ports[edge.external_index]}
                     )
             denominator = kin.apply(
                 diagram.denominator_expression(dimension=4, in_lmb=True)
                 .to_expression()
-                .replace(Symbols.denominator(a, b, c, inv), inv)
+                .replace(Symbols.denominator()(a, b, c, inv), inv)
             ).expand()
             assert denominator in (E("1"), B, C), denominator
             terms.append(
@@ -167,7 +167,7 @@ def _(
             if particle.color == 1:
                 continue
             matches = []
-            for slot in operator.structure.slots:
+            for slot in operator.structure.slots():
                 original = slot.to_expression()
                 if original.replace(ports[position], E("0")) == original:
                     continue
@@ -304,7 +304,7 @@ def _(mo):
 @app.cell
 def _(Model, S, hep, sp):
     model = Model.standard_model()
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     mass = model.particle("b").mass
     ee = -model.particle("e-").electric_charge
     gs = model.parameter("G").symbol

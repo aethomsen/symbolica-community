@@ -111,9 +111,9 @@ def _(mo):
 @app.cell
 def _(Kinematics, S, Symbols, hep, qcd_model):
     Q, P, K = (
-        Symbols.edge_momentum,
-        hep.Kinematics.external_momentum,
-        hep.Kinematics.loop_momentum,
+        Symbols.edge_momentum(),
+        hep.Kinematics.external_momentum(),
+        hep.Kinematics.loop_momentum(),
     )
     s, t, u = S("s", "t", "u")
     mb = qcd_model.particle("b").mass
@@ -169,7 +169,7 @@ def _(E, S, TensorExpression, numerator, qcd_diagram, qcd_model, sp):
         S("left_"),
         S("right_"),
     )
-    _slots = TensorExpression(numerator).structure.slots
+    _slots = TensorExpression(numerator).structure.slots()
     color_projector = E("1")
     initial_color_states = 1
     for _edge in qcd_diagram.external_edges:
@@ -317,7 +317,7 @@ def _(
         S("b_"),
         S("c_"),
         S("inverse_"),
-        Symbols.denominator,
+        Symbols.denominator(),
     )
     denominator = kinematics.apply(
         qcd_diagram.denominator_expression(

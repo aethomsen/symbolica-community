@@ -95,8 +95,8 @@ def _(S, hep, qed_model, sp):
     mass, charge = _electron.mass, -_electron.electric_charge
     mu, nu = S("mu", "nu")
     K, P, _mink, metric = (
-        hep.Kinematics.loop_momentum,
-        hep.Kinematics.external_momentum,
+        hep.Kinematics.loop_momentum(),
+        hep.Kinematics.external_momentum(),
         sp.Representation.mink,
         sp.TensorName.g().to_expression(),
     )
@@ -176,7 +176,9 @@ def _(D, K, Kinematics, P, TensorReducer, diagram, s, sp, trace):
         integrated=[K(0, sp.PortPattern.exact(sp.Representation.mink(D)))],
         external=[P(0, sp.PortPattern.exact(sp.Representation.mink(D)))],
     )
-    reduced = kin.apply(reducer.reduce(trace))
+    reduced = kin.apply(
+        sp.TensorExpression(reducer.reduce(trace)).contract().to_dots().to_expression()
+    )
     return photon_family, reduced
 
 

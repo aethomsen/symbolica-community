@@ -115,7 +115,7 @@ assert abs(complex(data["vacuum_master"].evaluate({data["m"]: m})) + 1/(2*m*m)) 
 # Lorentz slots. It must agree with the epsilon-norm-zero limit of the split
 # D-dimensional numerator, before either numerator is integrated.
 for split, four in zip(data["split_traces"], data["four_traces"]):
-    assert (split.replace(data["mu_squared"], E("0"))-four).expand() == 0
+    assert (split.replace(data["mu_squared"], E("0"))-four.to_expression()).expand() == 0
 
 # Independent four-by-four Dirac matrices, without Symbolica's trace or tensor
 # reducer. Evaluate the physical transverse projection on a complex triple cut.

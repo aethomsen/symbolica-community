@@ -310,7 +310,7 @@ def _(
             .with_lorentz_dimension(d)
             .rename_indices({ports[0]: mu, ports[1]: nu})
             .to_expression()
-            .replace(Symbols.dimension, d)
+            .replace(Symbols.dimension(), d)
         )
         pattern = denominator(
             edge_pattern, momentum_pattern, mass_pattern, quadratic_pattern
@@ -399,7 +399,7 @@ def _(E, Model, S, Symbols, hep, sp):
         "L4pi",
         "Nf",
     )
-    k, p = hep.Kinematics.loop_momentum, hep.Kinematics.external_momentum
+    k, p = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     _electron = base_model.particle("e-")
     mass, charge = _electron.mass, _electron.electric_charge
     mink, wave = (sp.Representation.mink, S("wave_"))
@@ -409,7 +409,7 @@ def _(E, Model, S, Symbols, hep, sp):
         "arguments___",
     )
     denominator, edge_pattern, momentum_pattern, mass_pattern, quadratic_pattern = (
-        Symbols.denominator,
+        Symbols.denominator(),
         S("edge_"),
         S("momentum_"),
         S("mass_"),
@@ -507,15 +507,15 @@ def _(E, Model, S, Symbols, base_model, json, sp):
             propagator["numerator"] = (
                 E("-1𝑖")
                 * (
-                    Symbols.ufo_metric(Symbols.ufo_index(1, 1), Symbols.ufo_index(1, 2))
+                    Symbols.ufo_metric()(Symbols.ufo_index()(1, 1), Symbols.ufo_index()(1, 2))
                     - (1 - S("xi"))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 1))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 2))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 1))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 2))
                     / sp.TensorName.g().to_expression()(
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
                     )
@@ -543,7 +543,7 @@ def _(S, Symbols, d, metric, mu, nu, p, sp):
         0, sp.PortPattern.exact(sp.Representation.mink(d), nu)
     )
     Qg, Qpp = S("metric_basis", "momentum_basis")
-    Q, dot = (Symbols.edge_momentum, sp.TensorPattern.dot)
+    Q, dot = (Symbols.edge_momentum(), sp.TensorPattern.dot)
     return Q, Qg, Qpp, dot, gmunu, ppmunu
 
 

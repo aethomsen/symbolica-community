@@ -138,7 +138,7 @@ def _(mo):
 
 @app.cell
 def _(E, S, Symbol, hep, model, sp):
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     charge = -model.particle("e-").electric_charge
     sw = model.parameter("sw").symbol
     mw = model.particle("W+").mass
@@ -319,7 +319,7 @@ def _(Kinematics, P, S, Symbols, diagram, me, mm, mw, s, t, zero):
         (0, 3, (mm**2 - s) / 2),
     ]:
         kin = kin.with_scalar_product(P(_i), P(_j), _value)
-    _den = Symbols.denominator
+    _den = Symbols.denominator()
     _edge_, _momentum_, _mass_, _quad_ = S(
         "edge_",
         "momentum_",

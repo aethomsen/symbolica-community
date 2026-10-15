@@ -272,7 +272,7 @@ def _(E, S, Symbols, hep, qed_model, sp):
         "Nf",
         "a4",
     )
-    k, p = hep.Kinematics.loop_momentum, hep.Kinematics.external_momentum
+    k, p = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     _electron = qed_model.particle("e-")
     mass, charge = _electron.mass, _electron.electric_charge
     mink, bis, gamma, wave = (
@@ -288,7 +288,7 @@ def _(E, S, Symbols, hep, qed_model, sp):
         "value_",
     )
     denominator, edge_pattern, momentum_pattern, mass_pattern, quadratic_pattern = (
-        Symbols.denominator,
+        Symbols.denominator(),
         S("edge_"),
         S("momentum_"),
         S("mass_"),

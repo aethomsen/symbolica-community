@@ -161,7 +161,7 @@ def _(
             TensorExpression(_numerator)
             .with_lorentz_dimension(D)
             .to_expression()
-            .replace(Symbols.dimension, D)
+            .replace(Symbols.dimension(), D)
             .replace(mUV**2, M)
         )
         if _kind == "photon":
@@ -544,7 +544,7 @@ def _(
                 )
                 .with_lorentz_dimension(D)
                 .to_expression()
-                .replace(Symbols.dimension, D)
+                .replace(Symbols.dimension(), D)
             )
             _pattern = den(edge_, mom_, mass_, quad_)
             for _match in list(_expanded.match(_pattern)):
@@ -902,15 +902,15 @@ def _(E, Model, S, Symbols, json, sp):
             _propagator["numerator"] = (
                 E("-1𝑖")
                 * (
-                    Symbols.ufo_metric(Symbols.ufo_index(1, 1), Symbols.ufo_index(1, 2))
+                    Symbols.ufo_metric()(Symbols.ufo_index()(1, 1), Symbols.ufo_index()(1, 2))
                     - (1 - S("xi"))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 1))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 2))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 1))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 2))
                     / sp.TensorName.g().to_expression()(
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
                     )
@@ -938,7 +938,7 @@ def _(S, Symbols, hep, model, sp):
         == sorted([electron.antiname, electron.name, photon.name])
     ]
     assert len(vertices) == 1
-    K, P = hep.Kinematics.loop_momentum, hep.Kinematics.external_momentum
+    K, P = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     _electron = model.particle("e-")
     mass, charge = _electron.mass, -_electron.electric_charge
     mink, bis, gamma, metric = (
@@ -955,7 +955,7 @@ def _(S, Symbols, hep, model, sp):
         "nu",
     )
     den, edge_, mom_, mass_, quad_ = (
-        Symbols.denominator,
+        Symbols.denominator(),
         S("edge_"),
         S("mom_"),
         S("mass_"),
@@ -1559,7 +1559,7 @@ def _(D, K, Kinematics, P, S, Symbols, s, sp, vacuum):
         massless_b,
         massless_args,
     ) = (
-        Symbols.edge_momentum,
+        Symbols.edge_momentum(),
         sp.TensorPattern.dot,
         S("massless_scale"),
         S("massless_a_"),

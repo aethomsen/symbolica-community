@@ -135,11 +135,10 @@ def _(mo):
 
 
 @app.cell
-def _(S, diagram):
-    _Q, _cind = S("gammalooprs::Q", "spenso::cind")
-    numerator_edge = diagram.internal_edges[0].id
+def _(diagram):
+    numerator_edge = diagram.internal_edges[0]
     quadratic_cff = diagram.integrate_energy(
-        method="cff", numerator=_Q(numerator_edge, _cind(0)) ** 2
+        method="cff", numerator=numerator_edge.energy_expression() ** 2
     )
     quadratic_cff
     return

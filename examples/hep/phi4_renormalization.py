@@ -99,9 +99,9 @@ def _(E, Kinematics, Model, S, Symbol, Symbols, hep):
         "eps",
     )
     Q, K, P = (
-        Symbols.edge_momentum,
-        hep.Kinematics.loop_momentum,
-        hep.Kinematics.external_momentum,
+        Symbols.edge_momentum(),
+        hep.Kinematics.loop_momentum(),
+        hep.Kinematics.external_momentum(),
     )
     dimension = S("D")
     zero, one, pi = (E("0"), E("1"), Symbol.PI)

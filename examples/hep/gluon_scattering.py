@@ -132,7 +132,7 @@ def _(mo):
 @app.cell
 def _(E, Kinematics, Model, S, hep, sp):
     model = Model.standard_model()
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     s = S("s", is_positive=True)
     t, u, D, N, dA = S("t", "u", "D", "N", "dA")
     gs = model.parameter("G").symbol
@@ -248,7 +248,7 @@ def _(
         _denominator = kin.apply(
             _diagram.denominator_expression(dimension=D, in_lmb=True)
             .to_expression()
-            .replace(Symbols.denominator(a, b, c, inv), inv)
+            .replace(Symbols.denominator()(a, b, c, inv), inv)
         ).expand()
         denominators.append(_denominator)
         terms.append(
@@ -277,7 +277,7 @@ def _(E, denominators, kin, s, t, terms, u):
         .to_dots()
         .expand()
     )
-    assert len(operator.structure.slots) == 8
+    assert len(operator.structure.slots()) == 8
     return (operator,)
 
 

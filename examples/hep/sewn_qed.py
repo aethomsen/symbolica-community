@@ -176,7 +176,7 @@ def _(
                 ).to_expression()
                 _denominator = _kin.apply(
                     _denominator.replace(
-                        Symbols.denominator(a, b, c, inverse), inverse
+                        Symbols.denominator()(a, b, c, inverse), inverse
                     ).replace(K(0, index), _orientation * k1(index))
                 )
                 _squared += (
@@ -230,9 +230,9 @@ def _(mo):
 def _(Model, S, Symbols, hep):
     model = Model.standard_model()
     Q, P, K = (
-        Symbols.edge_momentum,
-        hep.Kinematics.external_momentum,
-        hep.Kinematics.loop_momentum,
+        Symbols.edge_momentum(),
+        hep.Kinematics.external_momentum(),
+        hep.Kinematics.loop_momentum(),
     )
     s, t, u = S("s", "t", "u")
     me = model.particle("e-").mass

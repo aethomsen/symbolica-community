@@ -7,7 +7,7 @@ with app.setup(hide_code=True):
     import marimo as mo
 
     from symbolica import Graph, Replacement, S
-    from symbolica.community.hepkit import Model
+    from symbolica.community.hepkit import Kinematics, Model, Symbols
     from symbolica.community.tensor import TensorExpression, Representation
 
 
@@ -81,6 +81,25 @@ def ladder_filter(outer_quark=False):
     return accept
 
 
+@app.function(hide_code=True)
+def dot_coordinates(expression, dimension, namespace):
+    """Name the 15 independent products of four loop vectors and external p."""
+    K, P = Kinematics.loop_momentum(), Kinematics.external_momentum()
+    vectors = [K(i) for i in range(4)] + [P(0)]
+    kinematics = Kinematics(dimension, momenta=vectors)
+    labels = ["k0", "k1", "k2", "k3", "p"]
+    replacements, rows, symbols = [], [], []
+    for i in range(5):
+        for j in range(i, 5):
+            symbol = S(f"{namespace}::s{i}{j}")
+            product = kinematics.scalar_product(vectors[i], vectors[j])
+            replacements.append(Replacement(product, symbol))
+            symbols.append(symbol)
+            rows.append({"symbol": f"s{i}{j}", "dot product": f"{labels[i]} · {labels[j]}"})
+    polynomial = expression.replace_multiple(replacements).expand(via_poly=True)
+    return polynomial, symbols, rows
+
+
 @app.cell(hide_code=True)
 def _():
     mo.md("""
@@ -128,7 +147,7 @@ def _(ladder_choice, ladders):
     diagram = ladders[ladder_choice.value]
     graph_weight = diagram.overall_factor_expression(evaluate=True)
     diagram
-    return (diagram,)
+    return diagram, graph_weight
 
 
 @app.cell(hide_code=True)
@@ -147,9 +166,13 @@ def _():
 
 
 @app.cell
-def _(diagram, model):
+def _():
     D = S("D")
+    return (D,)
 
+
+@app.cell
+def _(D, diagram, model):
     _massless = model.expand_couplings(
         diagram.numerator_expression(in_lmb=True).to_expression()
     ).replace(model.particle("b").mass, 0)
@@ -189,17 +212,15 @@ def _(numerator):
 
 
 @app.cell
-def _():
-    return
-
-
-@app.cell
 def _(D, numerator):
     mink = Representation.mink(D)
     adjoint = Representation.coad(8)
-    projector = (
-        TensorExpression.g(mink) * TensorExpression.g(adjoint) / 8
-    ).index(*(slot.dual() for slot in numerator.structure.slots))
+    # Bind each metric's ports before multiplying; canonical structure order
+    # need not be the unresolved port order of the product's tensor view.
+    _slots = numerator.structure.slots()
+    _lorentz = [slot.dual() for slot in _slots if slot.representation == mink]
+    _color = [slot.dual() for slot in _slots if slot.representation == adjoint]
+    projector = TensorExpression.g(*_lorentz) * TensorExpression.g(*_color) / 8
     projector
     return (projector,)
 
@@ -223,7 +244,8 @@ def _(numerator, projector):
         contract="dots", color_substitute_cof_dimension_invariants=True
     )
     reduced
-    return (reduced,)
+    dot_numerator = reduced.to_expression().expand(via_poly=True)
+    return dot_numerator, reduced
 
 
 @app.cell(hide_code=True)
@@ -241,8 +263,19 @@ def _(reduced):
 
 
 @app.cell
-def _():
-    return
+def _(D, diagram, dot_numerator, graph_weight, model):
+    polynomial, coordinates, coordinate_rows = dot_coordinates(dot_numerator, D, "ladder")
+    weighted_numerator = graph_weight * polynomial
+    _edge, _momentum, _mass, _quadratic = S("edge_", "momentum_", "mass_", "quadratic_")
+    _denominator = (
+        diagram.denominator_expression(dimension=D, in_lmb=True)
+        .to_expression()
+        .replace(Symbols.denominator()(_edge, _momentum, _mass, _quadratic), _quadratic)
+        .replace(model.particle("b").mass, 0)
+    )
+    denominators, _, _ = dot_coordinates(_denominator, D, "ladder")
+    weighted_numerator
+    return denominators, polynomial, weighted_numerator
 
 
 if __name__ == "__main__":

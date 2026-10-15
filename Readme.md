@@ -278,34 +278,13 @@ The native build forwards the `pyo3/extension-module` feature selected by
 `pyproject.toml` so numerical-cache fingerprints describe the actual host
 dependency graph. Stub generation uses its separate feature selection.
 
-Native release builds use `opt-level = 3` (`-O3`) with ThinLTO, one code generation
-unit, and symbol stripping. Native builds limit LLVM's inlining threshold to 100
-to reduce generated code while retaining O3 loop optimizations and vectorization.
-Linux x86-64 builds also emit address-significance tables and enable LLD's safe
-identical-code folding to share eligible copies of generic functions. WASM keeps
-its separate build settings.
-
-Fonts and Vakint resources are supplied by separate data wheels, installed in
-disjoint `symbolica/_data/fonts/` and `symbolica/_data/vakint-data/` directories.
-Import discovers them automatically; no user path is required. Missing resources
-report the package and pip command needed to install them. See `data-loading.typ`.
-PyPI builds use
+Native release builds use Rust's size-oriented `opt-level = "s"` (`-Os`) for all
+crates, including RustRed and Symbolica, with ThinLTO, one code generation unit,
+and symbol stripping. This trades some runtime speed for smaller wheels;
+`release-performance` retains `-O3` for speed-oriented builds. PyPI builds use
 Deflate level 9 and check that every uploaded distribution is smaller than
 100,000,000 bytes. Check local artifacts with
 `python scripts/check_distribution_size.py dist/*.whl dist/*.tar.gz`.
-
-Compare release builds with `python scripts/benchmark_release_size.py results.json`.
-The benchmark checks the answers and records first-integration time, repeated
-computations, and the installed native library's hash. On Linux, use `--cpu N`
-to pin each comparison to the same CPU.
-
-With the locked dependencies on 2026-10-14, the Linux release wheel measured
-88.97 MB, compared with 107.81 MB at the default LLVM inlining threshold and
-without safe folding. Its native code section decreased from 224.95 MB to
-182.19 MB. Representative computations took about 2–8% longer than unrestricted
-O3, and repeated first integration measured 164 ms versus 151 ms. These results
-are platform dependent; measure fresh builds before publishing. The remaining repeated generic functions and generated Rubi rule
-constructors are candidates for further source-level sharing or data extraction.
 
 
 For a browser build, use `--no-default-features --features wasm` (the

@@ -453,7 +453,7 @@ def _(E, Model, S, Symbols, hep, json, sp, specification):
         "s",
     )
     _parameter_model = Model.from_json(json.dumps(specification))
-    K, P = hep.Kinematics.loop_momentum, hep.Kinematics.external_momentum
+    K, P = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     mass = _parameter_model.particle("e-").mass
     scalar_mass = _parameter_model.parameter("mass").symbol
     g = _parameter_model.parameter("g").symbol
@@ -466,7 +466,7 @@ def _(E, Model, S, Symbols, hep, json, sp, specification):
     )
     index, dim, wave, mu = S("index_", "dim_", "wave_", "mu")
     den, edge_, mom_, mass_, quad_ = (
-        Symbols.denominator,
+        Symbols.denominator(),
         S("edge_"),
         S("mom_"),
         S("mass_"),

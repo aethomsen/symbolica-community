@@ -110,9 +110,9 @@ def _(E, Model, S, Symbol, Symbols, hep):
         "I",
     )
     Q, K, P = (
-        Symbols.edge_momentum,
-        hep.Kinematics.loop_momentum,
-        hep.Kinematics.external_momentum,
+        Symbols.edge_momentum(),
+        hep.Kinematics.loop_momentum(),
+        hep.Kinematics.external_momentum(),
     )
     index_pattern, external_pattern = S("index_", "external_")
     zero, one, pi = (E("0"), E("1"), Symbol.PI)
