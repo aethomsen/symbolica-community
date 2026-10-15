@@ -234,19 +234,21 @@ def _(
     Symbol,
     cff,
     diagram,
+    hep,
     ltd,
     mo,
 ):
+    from symbolica.community import tensor as _tensor
+
     loop_variables = S("triangle::kx", "triangle::ky", "triangle::kz")
     _m = S("triangle::m")
     _p = S("triangle::p0", "triangle::px", "triangle::py", "triangle::pz")
     _q = S("triangle::q0", "triangle::qx", "triangle::qy", "triangle::qz")
-    _momentum, _cind = S("gammalooprs::Q", "spenso::cind")
     _external = [[a + b for a, b in zip(_p, _q)], _p, _q]
     _on_shell = cff.on_shell_energies
     _energies = [energy.symbol for energy in _on_shell.values()]
     _energy_replacements = [
-        Replacement(_momentum(edge.id, _cind(0)), _external[edge.external_index][0])
+        Replacement(edge.energy_expression(), _external[edge.external_index][0])
         for edge in diagram.external_edges
     ]
     _measure = (2 * Symbol.PI) ** -3
@@ -261,14 +263,20 @@ def _(
     ]
     assert (cff_kernel - sum(ltd_kernels)).together().is_zero()
 
-    _k, _p_symbol = S("gammalooprs::K", "gammalooprs::P")
+    _k, _p_symbol = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     _basis = diagram.loop_momentum_basis
+    _port = _tensor.PortPattern.exact(_tensor.Representation.mink(4))
+    _k_components = _tensor.TensorExpression(_k(0, _port)).components()
+    _p_components = [
+        _tensor.TensorExpression(_p_symbol(i, _port)).components()
+        for i in range(len(_basis.external_edges))
+    ]
     _coordinates = [
-        Replacement(_k(0, _cind(axis)), value)
+        Replacement(_k_components[axis], value)
         for axis, value in enumerate(loop_variables, start=1)
     ] + [
         Replacement(
-            _p_symbol(_basis.external_edges.index(edge.id), _cind(axis)),
+            _p_components[_basis.external_edges.index(edge.id)][axis],
             _external[edge.external_index][axis],
         )
         for edge in diagram.external_edges

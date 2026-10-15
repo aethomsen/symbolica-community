@@ -175,12 +175,11 @@ def _(E, Replacement, S, Symbol, np):
                 + longitudinal**2
                 + loop_mass**2
             ).sqrt()
-        momentum, cind = S("gammalooprs::Q", "spenso::cind")
         substitutions = [
             Replacement(energy.symbol, energies[edge])
             for edge, energy in cff.on_shell_energies.items()
         ] + [
-            Replacement(momentum(edge.id, cind(0)), shifts[edge.id])
+            Replacement(edge.energy_expression(), shifts[edge.id])
             for edge in diagram.external_edges
         ]
         # integrate_energy includes the dq0/(2*pi*i) contour and on-shell

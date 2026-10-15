@@ -96,7 +96,11 @@ def _(D, FeynmanDiagram, TensorExpression, adjoint):
         projector = TensorExpression.g(adjoint)(a, b) / adjoint.dimension
         projected = numerator * projector
         return projected.simplify_algebra(
-            contract="selected", representations=[adjoint], **color_settings
+            gamma=False,
+            epsilon=False,
+            contract="selected",
+            representations=[adjoint],
+            **color_settings,
         ).to_dots()
 
     return (project_color,)

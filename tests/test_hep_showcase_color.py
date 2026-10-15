@@ -49,7 +49,7 @@ def test_color_projection_preserves_only_the_lorentz_interface(notebook):
         assert stripped.rank == 2
         assert all(
             slot.to_expression().get_name() == "spenso::mink"
-            for slot in stripped.structure.slots
+            for slot in stripped.structure.slots()
         )
         for longitudinal in (False, True):
             projector = n.external_projector(stripped, longitudinal=longitudinal)
@@ -144,7 +144,7 @@ def test_color_projection_preserves_full_projection_and_uv_residues(notebook):
         full = diagram.numerator_expression().with_lorentz_dimension(n.D)
         a, b = [
             slot
-            for slot in full.structure.slots
+            for slot in full.structure.slots()
             if slot.to_expression().get_name() == "spenso::coad"
         ]
         color_projector = TensorExpression.g(n.adjoint)(a, b) / n.adjoint.dimension

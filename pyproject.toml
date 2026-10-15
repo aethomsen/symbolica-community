@@ -55,7 +55,7 @@ cache-keys = [{ file = "pyproject.toml" }, { file = "src/*.rs" }]
 
 [dependency-groups]
 dev = [
-    "marimo>=0.25.1,<0.26",
+    "marimo>=0.25.1,<0.26; python_version >= '3.10'",
     "matplotlib",
     "scipy",
     "docstring-to-markdown>=0.17,<1",
