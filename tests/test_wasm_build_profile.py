@@ -17,7 +17,8 @@ ROOT = Path(__file__).parents[1]
     ("release-performance", "-O3", None),
     ("release-small", "-O3", None),
 ])
-def test_wasm_profile_controls_linking_and_debug_sections(tmp_path, profile, link_level, debug):
+@pytest.mark.parametrize("deduplicate", [None, "0", "1"])
+def test_wasm_profile_controls_linking_and_debug_sections(tmp_path, profile, link_level, debug, deduplicate):
     binaries = tmp_path / "bin"
     binaries.mkdir()
     sdk = tmp_path / "sdk"
@@ -36,6 +37,7 @@ elif sys.argv[1] == 'build':
         'arguments': sys.argv[1:],
         'debug': os.environ.get('CARGO_PROFILE_DEV_DEBUG'),
         'binaryen': os.environ['WASM_OPT_FORCE_LEVEL'],
+        'deduplicate': os.environ['WASM_OPT_DEDUPLICATE_FUNCTIONS'],
     }))
 else:
     raise AssertionError(sys.argv)
@@ -44,6 +46,9 @@ else:
     record = tmp_path / "command.json"
     env = dict(os.environ)
     env.pop("CARGO_PROFILE_DEV_DEBUG", None)
+    env.pop("WASM_OPT_DEDUPLICATE_FUNCTIONS", None)
+    if deduplicate is not None:
+        env["WASM_OPT_DEDUPLICATE_FUNCTIONS"] = deduplicate
     env.update({
         "PATH": str(binaries) + os.pathsep + env.get("PATH", ""),
         "TEST_PYODIDE_SDK": str(sdk), "TEST_PYODIDE_RECORD": str(record),
@@ -62,3 +67,4 @@ else:
     assert "--locked" in configuration and "--no-default-features --features wasm" in configuration
     assert build["debug"] == debug
     assert build["binaryen"] == "-O0"
+    assert build["deduplicate"] == (deduplicate if deduplicate is not None else "1")

@@ -4,9 +4,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 outdir="${1:-dist/wasm-performance}"
-# Keep Binaryen postprocessing minimal for an experiment baseline. The private
-# wrapper captures LLVM's output before applying the requested Binaryen level.
+# Keep Binaryen postprocessing minimal. The private wrapper captures LLVM's
+# output before applying the requested Binaryen level and duplicate elimination.
 wasm_opt_level="${WASM_OPT_LEVEL:--O0}"
+# Deduplicate exact function bodies without enabling other Binaryen optimizations.
+wasm_deduplicate="${WASM_OPT_DEDUPLICATE_FUNCTIONS:-1}"
 rust_profile="${WASM_RUST_PROFILE:-release-performance}"
 wasm_features="${WASM_FEATURES:-wasm}"
 case "$wasm_features" in
@@ -16,6 +18,10 @@ esac
 case "$wasm_opt_level" in
   -O0|-O1|-O2|-O3|-Os|-Oz) ;;
   *) echo "Invalid WASM_OPT_LEVEL: $wasm_opt_level" >&2; exit 2 ;;
+esac
+case "$wasm_deduplicate" in
+  0|1) ;;
+  *) echo "Invalid WASM_OPT_DEDUPLICATE_FUNCTIONS: $wasm_deduplicate (expected 0 or 1)" >&2; exit 2 ;;
 esac
 case "$rust_profile" in
   dev|release-performance|release-small) ;;
@@ -49,6 +55,7 @@ export REAL_WASM_OPT="$binaryen_sdk/bin/wasm-opt"
 export WASM_OPT_CAPTURE_DIR="$outdir/compiler-output"
 export WASM_OPT_CAPTURE_INPUT_NAME=symbolica_community.wasm
 export WASM_OPT_FORCE_LEVEL="$wasm_opt_level"
+export WASM_OPT_DEDUPLICATE_FUNCTIONS="$wasm_deduplicate"
 # Fingerprint the same host feature graph that maturin builds below. Native
 # reducers use portable arithmetic on this target.
 export RUSTFLOW_WORKSPACE_MANIFEST="$PWD/Cargo.toml"

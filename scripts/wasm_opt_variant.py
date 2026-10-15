@@ -42,7 +42,7 @@ def main():
     # same original path. Distinguish them by their argument positions.
     flags = []
     output_next = False
-    for flag in invocation["arguments"]:
+    for flag in invocation.get("effective_arguments", invocation["arguments"]):
         if output_next:
             flags.append(str(output))
             output_next = False

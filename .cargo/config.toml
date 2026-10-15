@@ -1,3 +1,17 @@
 [env]
 # Embedded numerical caches fingerprint the dependencies resolved by this host.
 RUSTFLOW_WORKSPACE_MANIFEST = { value = "Cargo.toml", relative = true }
+
+# Keep O3's normal inlining; fold only functions whose addresses are insignificant.
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "llvm-args=--addrsig", "-C", "link-arg=-Wl,--icf=safe"]
+
+# Requires LLVM clang and ld64.lld on PATH (installed by the macOS wheel job).
+[target.'cfg(target_os = "macos")']
+linker = "clang"
+rustflags = ["-C", "llvm-args=--addrsig", "-C", "link-arg=-fuse-ld=lld", "-C", "link-arg=-Wl,--icf=safe"]
+
+# Optional MSVC builds use Rust's bundled LLD; SAFEICF is not an MSVC link.exe option.
+[target.'cfg(all(target_os = "windows", target_env = "msvc"))']
+linker = "rust-lld"
+rustflags = ["-C", "llvm-args=--addrsig", "-C", "link-arg=/OPT:SAFEICF"]

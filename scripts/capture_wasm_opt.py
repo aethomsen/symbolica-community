@@ -5,6 +5,7 @@ Set REAL_WASM_OPT and WASM_OPT_CAPTURE_DIR, and install this wrapper as
 bin/wasm-opt under a private EM_BINARYEN_ROOT. Other SDK binaries can be symlinks.
 WASM_OPT_CAPTURE_INPUT_NAME selects the final module instead of dependencies.
 WASM_OPT_FORCE_LEVEL changes only its Binaryen level, preserving linker defaults.
+WASM_OPT_DEDUPLICATE_FUNCTIONS=1 also merges exact duplicate functions in that module.
 """
 
 import json
@@ -37,19 +38,26 @@ def main():
             capture.mkdir(parents=True, exist_ok=False)
             for index, name in enumerate(inputs):
                 shutil.copy2(name, capture / f"input-{index}.wasm")
-            (capture / "invocation.json").write_text(json.dumps({
+            invocation = {
                 "executable": real, "arguments": arguments, "cwd": os.getcwd(),
                 "inputs": inputs, "output": output,
-            }, indent=2) + "\n")
+            }
             level = os.environ.get("WASM_OPT_FORCE_LEVEL")
             if level:
                 levels = {"-O0", "-O1", "-O2", "-O3", "-O4", "-Os", "-Oz"}
                 if level not in levels:
                     raise ValueError(f"Invalid WASM_OPT_FORCE_LEVEL: {level}")
                 arguments = [level if flag in levels else flag for flag in arguments]
-                (capture / "baseline-invocation.json").write_text(
-                    json.dumps([real, *arguments], indent=2) + "\n"
-                )
+            deduplicate = os.environ.get("WASM_OPT_DEDUPLICATE_FUNCTIONS", "0")
+            if deduplicate not in ("0", "1"):
+                raise ValueError("WASM_OPT_DEDUPLICATE_FUNCTIONS must be 0 or 1")
+            if deduplicate == "1" and "--duplicate-function-elimination" not in arguments:
+                arguments = [*arguments, "--duplicate-function-elimination"]
+            invocation["effective_arguments"] = arguments
+            (capture / "invocation.json").write_text(json.dumps(invocation, indent=2) + "\n")
+            (capture / "baseline-invocation.json").write_text(
+                json.dumps([real, *arguments], indent=2) + "\n"
+            )
     result = subprocess.run([real, *arguments])
     if result.returncode == 0 and capture is not None and output:
         shutil.copy2(output, capture / "output.wasm")

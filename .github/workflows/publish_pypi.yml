@@ -50,6 +50,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+      - name: Install LLVM Mach-O linker
+        run: |
+          brew install llvm lld
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix lld)/bin" >> "$GITHUB_PATH"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
@@ -133,6 +138,7 @@ jobs:
       - name: Build wheel
         env:
           WASM_OPT_LEVEL: "-O0"
+          WASM_OPT_DEDUPLICATE_FUNCTIONS: "1"
           WASM_RUST_PROFILE: release-performance
           WASM_SKIP_TESTS: "1"
         run: bash scripts/build_wasm_performance.sh dist
