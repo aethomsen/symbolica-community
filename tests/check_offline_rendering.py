@@ -8,6 +8,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
+from symbolica.community import graph
 from symbolica.community import hepkit as hep
 from symbolica.community import tensor as spenso
 from symbolica.core import S
@@ -43,8 +44,8 @@ try:
         (["g", "g"], ["g", "g", "g"], None),
         (["u"] * 4, [], None),
         ([], ["u"] * 4, None),
-        (["u", "u~"], ["u", "u~"], hep.RenderSettings(node_radius=5)),
-        (["u", "u~"], ["u", "u~"], hep.RenderSettings(node_radius=6)),
+        (["u", "u~"], ["u", "u~"], graph.RenderSettings(drawing=graph.DrawOptions(node_radius=5))),
+        (["u", "u~"], ["u", "u~"], graph.RenderSettings(drawing=graph.DrawOptions(node_radius=6))),
     ):
         drawing = ET.fromstring(model.process(incoming, outgoing).render(config=config).to_svg())
         blob = drawing.find(ns + "circle")
@@ -85,9 +86,8 @@ try:
     ET.fromstring(diagram.render().to_svg())
     ET.fromstring(
         diagram.render(
-            config=hep.RenderSettings(
-                layout=hep.LayoutSettings(impred_steps=2), show_particle=False
-            )
+            config=graph.RenderSettings(layouts=graph.LayoutSettings(impred_steps=2)),
+            style=hep.DiagramStyle(show_particle=False),
         ).to_svg()
     )
     expression = diagram.numerator_expression()
@@ -95,9 +95,9 @@ try:
     assert "<math" in expression.to_html()
     ET.fromstring(expression.to_svg())
     # The remaining graph types also render without Typst graph plugins.
-    ET.fromstring(process.render(config=hep.RenderSettings(show_particle=False)).to_svg())
+    ET.fromstring(process.render(style=hep.DiagramStyle(show_particle=False)).to_svg())
     network = spenso.TensorNetwork(spenso.TensorExpression(S("direct_svg_test::x") + 2))
-    ET.fromstring(network.render(config=spenso.RenderSettings(title="Native network")).to_svg())
+    ET.fromstring(network.render(config=graph.RenderSettings(title="Native network")).to_svg())
     assert "#image(bytes(" in network.to_linnest()
     scalar = hep.Model.phi3()
     cross = scalar.process(["phi"], ["phi", "phi"]).generate_cross_section(
@@ -106,7 +106,7 @@ try:
     original = cross.to_json()
     sewn_identities = None
     for split in (False, True):
-        svg = cross.render(config=hep.RenderSettings(split_initial_state=split)).to_svg()
+        svg = cross.render(style=hep.DiagramStyle(split_initial_state=split)).to_svg()
         root = ET.fromstring(svg)
         targets = [n for n in root.iter() if "data-linnet-kind" in n.attrib]
         identities = {

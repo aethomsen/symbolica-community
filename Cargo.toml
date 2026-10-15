@@ -61,15 +61,15 @@ default = ["module", "native", "community"]
 module = ["pyo3/abi3-py39"] # incompatible with stub_gen
 community = [
     "ibp-capacity-dispatch",
-    "dep:spynso3", "dep:feynkit-py", "dep:one-loop-reduce-python",
+    "dep:spynso3", "dep:linnet-py", "dep:feynkit-py", "dep:one-loop-reduce-python",
     "dep:rustred-feynkit", "dep:oneloop-python", "dep:oneloop", "dep:vakint",
     "dep:hyperbolica", "dep:symbolica-amflow", "dep:fastsecdec-python",
 ]
 # Keep the system allocator: mimalloc can crash after Python's importing thread exits.
-native = ["hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native", "rustred-feynkit?/native", "symbolica-amflow?/python", "fastsecdec-python?/native"]
+native = ["hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "linnet-py?/native", "feynkit-py?/native", "rustred-feynkit?/native", "symbolica-amflow?/python", "fastsecdec-python?/native"]
 # Use --no-default-features --features wasm-core for the kernel + integration only.
 wasm-core = ["symbolica/wasm"]
-wasm = ["wasm-core", "community", "hyperbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "rustred-feynkit/wasm", "one-loop-reduce-python/wasm", "symbolica-amflow/python_wasm", "fastsecdec-python?/portable"]
+wasm = ["wasm-core", "community", "hyperbolica/wasm", "spynso3/wasm", "linnet-py/wasm", "feynkit-py/wasm", "rustred-feynkit/wasm", "one-loop-reduce-python/wasm", "symbolica-amflow/python_wasm", "fastsecdec-python?/portable"]
 python_stubgen = [
     "hyperbolica/python_stubgen",
     "native",
@@ -77,6 +77,7 @@ python_stubgen = [
     "pyo3-stub-gen",
     "symbolica/python_stubgen",
     "spynso3/python_stubgen",
+    "linnet-py/python_stubgen",
     "feynkit-py/python_stubgen",
     "vakint/python_stubgen",
     "one-loop-reduce-python/python_stubgen",
@@ -89,6 +90,7 @@ fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastS
 hyperbolica = { optional = true, git = "https://github.com/benruijl/hyperbolica", rev = "31292085504b794dc444a006eba1d3013ed30944", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
+linnet-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
 feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false, features = ["ufo"] }
 # Embed the IBP bridge in both hosts so it shares their Symbolica atoms.

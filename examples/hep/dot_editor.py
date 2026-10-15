@@ -215,7 +215,7 @@ def _():
     return (dot_source,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(dot_source, model):
     diagram = None
     parse_error = None
@@ -231,7 +231,7 @@ def _(dot_source, model):
     return diagram, parse_error
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(diagram, show_momenta):
     drawing = None
     render_error = None

@@ -205,6 +205,8 @@ def _(Counter, hep, is_kite):
 
 @app.cell
 def _(diagram, edges, hep, massive_slots, massless, mo):
+    from symbolica.community import graph as _graph
+
     mo.output.append(
         diagram.render(
             momenta=True,
@@ -213,8 +215,8 @@ def _(diagram, edges, hep, massive_slots, massless, mo):
                 if massless.value
                 else diagram.subgraph(edges=[edges[i].id for i in massive_slots])
             ),
-            config=hep.RenderSettings(
-                show_particle=False,
+            style=hep.DiagramStyle(show_particle=False),
+            config=_graph.RenderSettings(
                 title="Massless kite"
                 if massless.value
                 else "Two massive propagators on one arm",

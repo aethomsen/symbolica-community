@@ -38,8 +38,9 @@ def test_flat_namespace_and_stubs():
         "TadpoleFilterOptions",
         "SnailFilterOptions",
         "GenerationProgress",
-        "CffGenerator",
-        "CffResult",
+        "CffRepresentation",
+        "LtdRepresentation",
+        "EnergySurface",
         "TensorReducer",
         "FourMomentum",
         "Wavefunction",
@@ -54,9 +55,7 @@ def test_flat_namespace_and_stubs():
     classes = {
         name: value for name, value in vars(hep).items() if isinstance(value, type)
     }
-    shared = {"DiagramRender", "LayoutSettings", "StrokeStyle"}
-    for name in shared:
-        assert classes.pop(name) is getattr(graph, name)
+    for name in ("DiagramRender", "LayoutSettings", "Stroke", "RenderSettings"):
         assert getattr(graph, name).__module__ == "symbolica.community.graph"
     sector_shared = {
         "CompilationSettings", "StabilitySettings", "GenerationSession",
@@ -136,11 +135,11 @@ def test_generate_diagram_and_cff(model):
     assert restored.loop_count == from_dot.loop_count == 1
     assert restored.name == diagram.name
     assert len(restored.loop_momentum_bases()[0].loop_edges) == 1
-    cff = hep.CffGenerator().generate(restored)
-    assert isinstance(cff, hep.CffResult)
+    cff = restored.integrate_energy(method="cff")
+    assert isinstance(cff, hep.CffRepresentation)
     assert len(cff) > 0
     assert isinstance(cff.to_expression(), Expression)
-    assert diagram.build_cff().to_expression() == cff.to_expression()
+    assert diagram.integrate_energy(method="cff").to_expression() == cff.to_expression()
 
 
 def test_generation_keywords_and_empty_results(model):

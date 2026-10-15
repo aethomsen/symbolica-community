@@ -5,27 +5,20 @@ import builtins
 import collections.abc
 import decimal
 import enum
-import linnet
 import os
 import pathlib
 import symbolica
+import symbolica.community.graph
 import symbolica.community.hepkit.sector_decomposition
 import symbolica.community.tensor
-import symbolica.core
 import types
 import typing
+from typing import overload
 from symbolica import ComplexFloat, Float
-from symbolica.community.graph import DiagramRender, LayoutSettings, StrokeStyle
+from symbolica.community.graph import DiagramRender, RenderSettings
 from symbolica.community.tensor import DisplaySettings, Slot, TensorExpression, TensorName
 from symbolica.core import Expression
-from . import integration
-from . import oneloop
-from . import sector_decomposition
-from . import vakint
 
-DiagramRender: typing.TypeAlias = symbolica.community.graph.DiagramRender
-LayoutSettings: typing.TypeAlias = symbolica.community.graph.LayoutSettings
-StrokeStyle: typing.TypeAlias = symbolica.community.graph.StrokeStyle
 @typing.final
 class Amplitude:
     r"""
@@ -181,7 +174,7 @@ class Amplitude:
 
         >>> print(amplitude)
         """
-    def render(self, *, config: typing.Optional[RenderSettings] = None, max_diagrams: typing.Optional[builtins.int] = 6, term_settings: typing.Optional[DisplaySettings] = None) -> AmplitudeRender:
+    def render(self, *, config: typing.Optional[RenderSettings] = None, style: typing.Optional[DiagramStyle] = None, max_diagrams: typing.Optional[builtins.int] = 6, term_settings: typing.Optional[DisplaySettings] = None) -> DiagramRender:
         r"""
         Render a configurable snapshot of the amplitude's diagrams and weighted terms.
 
@@ -189,11 +182,14 @@ class Amplitude:
         --------
         Using the setup in the ``Amplitude`` class example:
 
-        >>> drawing = amplitude.render(config=hep.RenderSettings(node_radius=5), max_diagrams=2)
+        >>> from symbolica.community.graph import RenderSettings, DrawOptions
+        >>> drawing = amplitude.render(config=RenderSettings(drawing=DrawOptions(node_radius=5)), max_diagrams=2)
         >>> html = drawing.to_html()
 
         Parameters
         ----------
+        style : DiagramStyle or None, optional
+            Particle, momentum, and physical index presentation.
         config : RenderSettings, optional
             Layout, labels, and stroke settings shared by all diagrams.
         max_diagrams : int or None, optional
@@ -322,72 +318,6 @@ class AmplitudeLeg:
         Using the setup in the ``AmplitudeLeg`` class example:
 
         >>> print(amplitude.legs[0])
-        """
-
-@typing.final
-class AmplitudeRender:
-    r"""
-    A rendered amplitude collection retaining its configured diagram snapshots.
-
-    Examples
-    --------
-    >>> from symbolica.community import hepkit as hep
-    >>> process = hep.Model.phi4().process(["phi", "phi"], ["phi", "phi"])
-    >>> amplitude = hep.Amplitude(process.generate_diagrams().diagrams)
-    >>> drawing = amplitude.render(max_diagrams=None)
-    """
-    @property
-    def diagrams(self) -> builtins.list[DiagramRender]:
-        r"""
-        Rendered diagram snapshots in contribution order, bounded by max_diagrams.
-
-        Examples
-        --------
-        Using the setup in the ``AmplitudeRender`` class example:
-
-        >>> svg = drawing.diagrams[0].to_svg()
-        """
-    def to_html(self) -> builtins.str:
-        r"""
-        Export the configured collection as interactive notebook HTML.
-
-        Examples
-        --------
-        Using the setup in the ``AmplitudeRender`` class example:
-
-        >>> html = drawing.to_html()
-        """
-    def _repr_html_(self) -> builtins.str:
-        r"""
-        Display the configured collection in IPython and Jupyter.
-
-        Examples
-        --------
-        Using the setup in the ``AmplitudeRender`` class example:
-
-        >>> from IPython.display import display
-        >>> display(drawing)
-        """
-    def _mime_(self) -> tuple[builtins.str, builtins.str]:
-        r"""
-        Display the configured collection in Marimo.
-
-        Examples
-        --------
-        Using the setup in the ``AmplitudeRender`` class example:
-
-        >>> import marimo as mo
-        >>> mo.as_html(drawing)
-        """
-    def __repr__(self) -> builtins.str:
-        r"""
-        Summarize the number of rendered contributions in text-only frontends.
-
-        Examples
-        --------
-        Using the setup in the ``AmplitudeRender`` class example:
-
-        >>> text = repr(drawing)
         """
 
 @typing.final
@@ -532,143 +462,33 @@ class CffError(FeynkitError):
     >>> result = process.generate_diagrams(loops=1)
     >>> diagram = result.diagrams[0]
     >>> try:
-    ...     diagram.build_cff(contracted_edges=[999999])
+    ...     diagram.integrate_energy(method="cff", contracted_edges=[999999])
     ... except hep.CffError as error:
     ...     message = str(error)
     """
     ...
 
 @typing.final
-class CffGenerator:
-    r"""
-    Generate Cross-Free Family energy denominators for Feynman diagrams.
-
-    The generator can constrain edge orientations or contractions before
-    enumerating the acyclic energy flows of a loop diagram.
-
-    Examples
-    --------
-    >>> from symbolica import S, E
-    >>> from symbolica.community import hepkit as hep
-    >>> model = hep.Model.phi4()
-    >>> process = model.process(["phi", "phi"], ["phi", "phi"])
-    >>> result = process.generate_diagrams(loops=1)
-    >>> diagram = result.diagrams[0]
-    >>> generator = hep.CffGenerator(max_orientations=1000)
-    >>> result = generator.generate(diagram)
-    >>> expression = result.to_expression()
-
-    Parameters
-    ----------
-    max_orientations : int, optional
-        Maximum number of candidate edge orientations to inspect.
-    """
-    def __new__(cls, max_orientations: typing.Optional[builtins.int] = None) -> CffGenerator:
-        r"""
-        Create a configurable Cross-Free Family generator.
-
-        Examples
-        --------
-        Using the setup in the ``CffGenerator`` class example:
-
-        >>> generator = hep.CffGenerator(max_orientations=1000)
-
-        Parameters
-        ----------
-        max_orientations : int, optional
-            Maximum number of candidate orientations to inspect.
-        """
-    def fix_orientation(self, edge: builtins.int, reversed: builtins.bool) -> None:
-        r"""
-        Fix an edge to its stored or reversed direction.
-
-        Examples
-        --------
-        Using the setup in the ``CffGenerator`` class example:
-
-        >>> generator = hep.CffGenerator()
-        >>> generator.fix_orientation(diagram.internal_edges[0].id, reversed=True)
-        >>> result = generator.generate(diagram)
-
-        Parameters
-        ----------
-        edge : int
-            Diagram edge ID.
-        reversed : bool
-            Select the reversed direction when true.
-        """
-    def contract_edge(self, edge: builtins.int) -> None:
-        r"""
-        Contract an edge before generating denominator surfaces.
-
-        Examples
-        --------
-        Using the setup in the ``CffGenerator`` class example:
-
-        >>> generator = hep.CffGenerator()
-        >>> generator.contract_edge(diagram.internal_edges[0].id)
-        >>> result = generator.generate(diagram)
-
-        Parameters
-        ----------
-        edge : int
-            Diagram edge ID to contract.
-        """
-    def mark_initial_state_edge(self, edge: builtins.int) -> None:
-        r"""
-        Mark an edge as belonging to the initial state.
-
-        Examples
-        --------
-        Using the setup in the ``CffGenerator`` class example:
-
-        >>> generator = hep.CffGenerator()
-        >>> generator.mark_initial_state_edge(diagram.external_edges[0].id)
-        >>> result = generator.generate(diagram)
-
-        Parameters
-        ----------
-        edge : int
-            Diagram edge ID to classify as initial state.
-        """
-    def generate(self, diagram: FeynmanDiagram) -> CffResult:
-        r"""
-        Generate a Cross-Free Family representation for a diagram.
-
-        Examples
-        --------
-        Using the setup in the ``CffGenerator`` class example:
-
-        >>> generator = hep.CffGenerator()
-        >>> result = generator.generate(diagram)
-        >>> expression = result.to_expression()
-
-        Parameters
-        ----------
-        diagram : FeynmanDiagram
-            Diagram or subgraph whose energy-flow orientations are enumerated.
-        """
-
-@typing.final
 class CffOrientation:
     r"""
-    One acyclic energy-flow orientation contributing to a CFF expression.
+    One acyclic energy-flow orientation in a CFF representation.
 
-    An orientation records the direction chosen for every diagram edge and the
-    products of denominator surfaces generated by that choice.
+    ``families`` contains its cross-free denominator products.
+    ``to_expression()`` sums their contributions, including the common
+    energy prefactors and any supplied numerator. Edge directions are relative to the
+    originating diagram's stored orientation.
 
     Examples
     --------
-    >>> from symbolica import S, E
     >>> from symbolica.community import hepkit as hep
-    >>> model = hep.Model.phi4()
-    >>> process = model.process(["phi", "phi"], ["phi", "phi"])
-    >>> result = process.generate_diagrams(loops=1)
-    >>> diagram = result.diagrams[0]
-    >>> result = diagram.build_cff()
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> result = diagram.integrate_energy(method="cff")
     >>> orientation = result.orientations[0]
-    >>> products = [[surface.symbol_name for surface in product]
-    ...             for product in orientation.denominator_products()]
+    >>> expression = orientation.to_expression()
     """
     @property
     def id(self) -> builtins.int:
@@ -682,6 +502,19 @@ class CffOrientation:
         >>> orientation_ids = [item.id for item in result.orientations]
         """
     @property
+    def edge_signs(self) -> builtins.dict[builtins.int, typing.Optional[builtins.int]]:
+        r"""
+        Edge signs relative to the diagram's stored arrows.
+
+        +1 agrees with the stored direction, -1 reverses it, and None denotes
+        an undirected edge. These are orientation signs, not surface coefficients.
+
+        Examples
+        --------
+        >>> signs = orientation.edge_signs
+        >>> assert all(sign in (-1, 1, None) for sign in signs.values())
+        """
+    @property
     def edge_orientations(self) -> builtins.list[tuple[builtins.int, builtins.str]]:
         r"""
         Return each edge ID and its selected orientation.
@@ -692,44 +525,85 @@ class CffOrientation:
 
         >>> directions = dict(orientation.edge_orientations)
         """
-    def denominator_products(self) -> builtins.list[builtins.list[CffSurface]]:
+    @property
+    def families(self) -> builtins.list[CrossFreeFamily]:
         r"""
-        Expand this orientation into products of denominator surfaces.
+        Cross-free families contributing to this orientation.
 
         Examples
         --------
-        Using the setup in the ``CffOrientation`` class example:
+        >>> families = orientation.families
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Summarize this orientation without displaying its parent representation.
 
-        >>> products = orientation.denominator_products()
-        >>> denominator_variables = [
-        ...     [surface.symbol_name for surface in product] for product in products
-        ... ]
+        Examples
+        --------
+        >>> text = repr(orientation)
+        """
+    def to_expression(self, *, expand_surfaces: builtins.bool = True) -> TensorExpression:
+        r"""
+        Sum this orientation's families, including the common energy prefactor.
+
+        Examples
+        --------
+        Using the setup in the class example:
+
+        >>> expression = orientation.to_expression()
+
+        Parameters
+        ----------
+        expand_surfaces : bool, optional
+            Replace stored surface placeholders by affine energy definitions.
+            Defaults to True. On-shell energies remain symbolic in either case.
+
+        Returns
+        -------
+        TensorExpression
+            This orientation's contribution to the CFF energy integral.
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Inspect this orientation's family sum and fixed energy-flow graph.
+
+        Examples
+        --------
+        >>> html = orientation._repr_html_()
+        """
+    def _display_(self) -> typing.Any:
+        r"""
+        Display this orientation in Marimo.
+
+        Examples
+        --------
+        >>> view = orientation._display_()
         """
 
 @typing.final
 class CffReport:
     r"""
-    Diagnostic counts collected while constructing a Cross-Free Family.
+    Generation counts for a CFF representation.
 
-    Use this report to compare the number of candidate energy flows with the
-    acyclic flows and denominator terms that survive.
+    Compare candidate energy flows with the acyclic flows and denominator
+    products retained in the result.
 
     Examples
     --------
-    >>> from symbolica import S, E
     >>> from symbolica.community import hepkit as hep
-    >>> model = hep.Model.phi4()
-    >>> process = model.process(["phi", "phi"], ["phi", "phi"])
-    >>> result = process.generate_diagrams(loops=1)
-    >>> diagram = result.diagrams[0]
-    >>> result = diagram.build_cff()
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> result = diagram.integrate_energy(method="cff")
     >>> report = result.report
     >>> assert report.candidate_orientations >= report.acyclic_orientations
     """
     @property
-    def candidate_orientations(self) -> builtins.int:
+    def candidate_orientations(self) -> typing.Optional[builtins.int]:
         r"""
-        Return the number of candidate edge orientations considered.
+        Candidate search count, or None for generalized numerator generation.
 
         Examples
         --------
@@ -738,9 +612,9 @@ class CffReport:
         >>> assert report.candidate_orientations >= report.acyclic_orientations
         """
     @property
-    def acyclic_orientations(self) -> builtins.int:
+    def acyclic_orientations(self) -> typing.Optional[builtins.int]:
         r"""
-        Return the number of candidate orientations that are acyclic.
+        Acyclic search count, or None for generalized numerator generation.
 
         Examples
         --------
@@ -811,25 +685,69 @@ class CffReport:
         """
 
 @typing.final
-class CffResult:
+class CffRepresentation:
     r"""
-    The Cross-Free Family representation of a Feynman diagram.
+    A loop-energy integral in the cross-free family (CFF) representation.
 
-    A result bundles the energy-flow orientations, their denominator surfaces,
-    generation statistics, and conversion to a native Symbolica expression.
+    Create with ``diagram.integrate_energy(method="cff")``. The result groups
+    acyclic energy-flow orientations into cross-free families of denominators.
+    With :math:`E_e=\sqrt{\boldsymbol{q}_e^2+m_e^2}`, its scalar expression is
+
+    $$
+    I_{\mathrm{CFF}}=\left(\prod_e\frac{-1}{2E_e}\right)
+    \sum_o\sum_{F\in\mathcal{F}_o}\prod_{s\in F}\frac{1}{s}.
+    $$
+
+    Repeated surfaces appear with their multiplicity. Family and orientation
+    expressions include their energy prefactors, so they sum to the result.
+    The measure is :math:`d\ell^0/(2\pi i)` per loop, with contours closed below,
+    as in ``LtdRepresentation``. The scalar formula above applies without a
+    numerator. Supply ``numerator=...`` to ``integrate_energy`` to generate
+    bounded polynomial energy numerators, including quadratic and higher powers.
+    Each generalized family retains its own coefficient, numerator evaluation
+    map and denominator powers. Couplings, graph weights and the spatial measure
+    remain separate.
+
+    Both representations use ``gammalooprs::OSE(e)`` for :math:`E_e` and
+    ``gammalooprs::Q(e, spenso::cind(0))`` for external energies; ``e`` is a
+    physical diagram edge ID. ``on_shell_energies`` supplies the routed square
+    roots. Impose external momentum conservation when comparing CFF and LTD.
+
+    Displaying the object opens the orientation, family and surface explorer in
+    Marimo or an HTML notebook. ``len(result)`` counts denominator products.
 
     Examples
     --------
-    >>> from symbolica import S, E
     >>> from symbolica.community import hepkit as hep
-    >>> model = hep.Model.phi4()
-    >>> process = model.process(["phi", "phi"], ["phi", "phi"])
-    >>> result = process.generate_diagrams(loops=1)
-    >>> diagram = result.diagrams[0]
-    >>> result = diagram.build_cff()
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> result = diagram.integrate_energy(method="cff")
     >>> expression = result.to_expression()
     >>> assert result.report.acyclic_orientations == len(result.orientations)
     """
+    @property
+    def numerator(self) -> Expression:
+        r"""
+        Numerator supplied to energy integration; one for scalar generation.
+
+        Examples
+        --------
+        >>> numerator = result.numerator
+        """
+    @property
+    def energy_degree_bounds(self) -> builtins.dict[builtins.int, builtins.int]:
+        r"""
+        Inferred polynomial energy-degree bounds keyed by physical internal edge ID.
+
+        Omitted edges have degree zero. Bounds are computed before applying routing.
+
+        Examples
+        --------
+        >>> bounds = result.energy_degree_bounds
+        """
     @property
     def report(self) -> CffReport:
         r"""
@@ -837,7 +755,7 @@ class CffResult:
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
         >>> assert result.report.acyclic_orientations == len(result.orientations)
         """
@@ -848,56 +766,67 @@ class CffResult:
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
-        >>> products = [item.denominator_products() for item in result.orientations]
+        >>> products = [item.to_expression() for item in result.orientations]
         """
     @property
-    def surfaces(self) -> builtins.list[CffSurface]:
+    def surfaces(self) -> builtins.list[EnergySurface]:
         r"""
         Return all unique energy and H surfaces in this result.
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
-        >>> energies = [result.surface_expression(surface) for surface in result.surfaces]
+        >>> energies = [surface.to_expression() for surface in result.surfaces]
         """
-    def to_expression(self, *, expand_surfaces: builtins.bool = False, normalized: builtins.bool = False) -> Expression:
+    @property
+    def diagram(self) -> FeynmanDiagram:
         r"""
-        Convert to the canonical eta/H denominator expression.
-
-        ``expand_surfaces`` substitutes on-shell/external energies. ``normalized``
-        additionally includes the -1/(2 E) factors and GammaLoop loop measure;
-        it implies ``expand_surfaces``. Numerators and global weights stay separate.
+        Originating diagram or selected subgraph, retaining its routing and owner.
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
-
-        >>> result.to_expression(normalized=True)
-
-        Parameters
-        ----------
-        expand_surfaces : bool
-            Substitute canonical on-shell and external energies.
-        normalized : bool
-            Include the energy products and spatial loop measure.
+        >>> routing = result.diagram.loop_momentum_basis
         """
-    def surface_expression(self, surface: CffSurface) -> Expression:
+    @property
+    def on_shell_energies(self) -> builtins.dict[builtins.int, OnShellEnergy]:
         r"""
-        Expand one surface belonging to this result into canonical energy symbols.
+        Shared symbolic energies and routed square roots, keyed by physical edge ID.
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        >>> definitions = [(e.symbol, e.to_expression()) for e in result.on_shell_energies.values()]
+        """
+    def to_expression(self, *, expand_surfaces: builtins.bool = True) -> TensorExpression:
+        r"""
+        Return the scalar loop-energy integral as a Symbolica expression.
 
-        >>> result.surface_expression(result.surfaces[0])
+        Includes contour signs and on-shell energy factors for
+        :math:`d\ell^0/(2\pi i)` per loop, with contours closed below. A supplied
+        numerator is included; couplings, graph weights and the spatial measure are separate.
+        ``expand_surfaces`` expands affine denominators while leaving
+        ``gammalooprs::OSE(e)`` symbolic. Use ``on_shell_energies`` for their routed
+        definitions or custom evaluation.
+
+        Examples
+        --------
+        Using the setup in the class example:
+
+        >>> expression = result.to_expression()
+        >>> compact = result.to_expression(expand_surfaces=False)
 
         Parameters
         ----------
-        surface : CffSurface
-            A surface obtained from this result.
+        expand_surfaces : bool, optional
+            Replace surface placeholders by their affine energy definitions.
+            Defaults to True. False keeps placeholders local to this representation.
+
+        Returns
+        -------
+        TensorExpression
+            Rank-zero tensor summing all orientation contributions and prefactors.
         """
     def raised_surface_groups(self, edge_representatives: typing.Optional[typing.Mapping[builtins.int, builtins.int]] = None) -> builtins.list[CffSurfaceGroup]:
         r"""
@@ -906,7 +835,7 @@ class CffResult:
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
         >>> groups = result.raised_surface_groups({3: 2})
         >>> [group.max_order for group in groups]
@@ -916,14 +845,14 @@ class CffResult:
         edge_representatives : dict[int, int], optional
             Repeated propagator edge IDs mapped to their canonical representative.
         """
-    def pole_coefficients(self, group: CffSurfaceGroup) -> builtins.list[CffResult]:
+    def pole_coefficients(self, group: CffSurfaceGroup) -> builtins.list[CffRepresentation]:
         r"""
         Return coefficients of each inverse surface power, indexed from order one.
         These are pole coefficients, before analytic residue derivatives.
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
         >>> coefficients = result.pole_coefficients(result.raised_surface_groups()[0])
         >>> [coefficient.to_expression() for coefficient in coefficients]
@@ -933,7 +862,7 @@ class CffResult:
         group : CffSurfaceGroup
             A raised-surface group belonging to this result.
         """
-    def residue(self, group: CffSurfaceGroup, *, variable: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], root: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], surface: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], coefficient: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], normalized: builtins.bool = False, replacements: typing.Optional[typing.Sequence[tuple[Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]]]] = None) -> Expression:
+    def residue(self, group: CffSurfaceGroup, *, variable: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], root: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], surface: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], coefficient: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], replacements: typing.Optional[typing.Sequence[tuple[Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]]]] = None) -> TensorExpression:
         r"""
         Evaluate all pole-order contributions to a residue in an explicit variable.
         ``surface`` must be the group's energy surface expressed in that variable;
@@ -942,9 +871,10 @@ class CffResult:
 
         Examples
         --------
-        Using the setup in ``CffResult``, illustrate a simple pole locally
+        Using the setup in ``CffRepresentation``, illustrate a simple pole locally
         parameterized by ``surface=t`` with constant remaining coefficient:
 
+        >>> from symbolica import E, S
         >>> t = S("t")
         >>> group = result.raised_surface_groups()[0]
         >>> residue = result.residue(group, variable=t, root=E("0"), surface=t, coefficient=E("1"))
@@ -961,38 +891,6 @@ class CffResult:
             Energy surface expressed in the integration variable.
         coefficient : Expression
             Complete remaining coefficient to differentiate.
-        normalized : bool
-            Include the generated CFF normalization in the coefficient.
-        replacements : list[tuple[Expression, Expression]], optional
-            Route all energy dependence to the integration variable before differentiating.
-        Evaluate all pole-order contributions to a residue in an explicit variable.
-        ``surface`` must be the group's energy surface expressed in that variable;
-        ``coefficient`` is the complete remaining coefficient, including any factors
-        whose derivatives must act. The supplied root is assumed to be a simple zero.
-
-        Examples
-        --------
-        Using the setup in ``CffResult``, illustrate a simple pole locally
-        parameterized by ``surface=t`` with constant remaining coefficient:
-
-        >>> t = S("t")
-        >>> group = result.raised_surface_groups()[0]
-        >>> residue = result.residue(group, variable=t, root=E("0"), surface=t, coefficient=E("1"))
-
-        Parameters
-        ----------
-        group : CffSurfaceGroup
-            A raised-surface group belonging to this result.
-        variable : Expression
-            Independent integration variable.
-        root : Expression
-            Simple zero of the surface, independent of variable.
-        surface : Expression
-            Energy surface expressed in the integration variable.
-        coefficient : Expression
-            Complete remaining coefficient to differentiate.
-        normalized : bool
-            Include the generated CFF normalization in the coefficient.
         replacements : list[tuple[Expression, Expression]], optional
             Route all energy dependence to the integration variable before differentiating.
         """
@@ -1002,7 +900,7 @@ class CffResult:
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
         >>> denominator_term_count = len(result)
         """
@@ -1012,23 +910,37 @@ class CffResult:
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
         >>> print(result)
         """
     def _repr_html_(self) -> builtins.str:
         r"""
-        Render the CFF report and its native Symbolica expression as HTML.
+        Explore orientations, factored families and surface regions on the native graph.
 
-        The expression fragment comes from ``Expression._repr_html_`` so its
-        Symbolica formatting is preserved in notebook output.
+        Arrowhead clicks select another retained orientation; they never change the result.
+        Shift-click surface factors to inspect several circlings together. The displayed
+        expression includes any supplied numerator and excludes the spatial measure.
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
         >>> from IPython.display import display
         >>> display(result)
+        """
+    def _display_(self) -> typing.Any:
+        r"""
+        Return Marimo's interactive presentation in a script-enabled iframe.
+
+        Marimo uses this hook automatically when displaying the result.
+        Other notebook frontends use ``_repr_html_`` without requiring Marimo.
+
+        Examples
+        --------
+        Using the setup in the ``CffRepresentation`` class example:
+
+        >>> presentation = result._display_()
         """
     def _repr_pretty_(self, pretty: typing.Any, cycle: builtins.bool) -> None:
         r"""
@@ -1036,7 +948,7 @@ class CffResult:
 
         Examples
         --------
-        Using the setup in the ``CffResult`` class example:
+        Using the setup in the ``CffRepresentation`` class example:
 
         >>> from IPython.lib.pretty import pretty
         >>> text = pretty(result)
@@ -1047,123 +959,6 @@ class CffResult:
             The IPython pretty-printer object.
         cycle : bool
             Whether this object is part of a recursive formatting cycle.
-        """
-
-@typing.final
-class CffSurface:
-    r"""
-    A denominator surface appearing in a Cross-Free Family representation.
-
-    Surfaces identify the combinations of on-shell energies that can occur in
-    loop-energy denominators.  They are obtained from a ``CffResult`` rather
-    than constructed directly.
-
-    Examples
-    --------
-    >>> from symbolica import S, E
-    >>> from symbolica.community import hepkit as hep
-    >>> model = hep.Model.phi4()
-    >>> process = model.process(["phi", "phi"], ["phi", "phi"])
-    >>> result = process.generate_diagrams(loops=1)
-    >>> diagram = result.diagrams[0]
-    >>> result = diagram.build_cff()
-    >>> surface = result.surfaces[0]
-    >>> energy_combination = result.surface_expression(surface)
-    """
-    @property
-    def kind(self) -> builtins.str:
-        r"""
-        Return the surface category: energy, h, unit, or infinite.
-
-        Examples
-        --------
-        Using the setup in the ``CffSurface`` class example:
-
-        >>> surface_kinds = {item.kind for item in result.surfaces}
-        """
-    @property
-    def index(self) -> builtins.int:
-        r"""
-        Return the index of an energy or H surface.
-
-        Raises :class:`CffError` for the special unit or infinite sentinels.
-
-        Examples
-        --------
-        Using the setup in the ``CffSurface`` class example:
-
-        >>> surface_by_index = {item.index: item for item in result.surfaces}
-        """
-    @property
-    def symbol_name(self) -> builtins.str:
-        r"""
-        Return the Symbolica variable name assigned to this surface.
-
-        Raises :class:`CffError` for the special unit or infinite sentinels,
-        which are not denominator variables.
-
-        Examples
-        --------
-        Using the setup in the ``CffSurface`` class example:
-
-        >>> surface_names = [item.symbol_name for item in result.surfaces]
-        """
-    @property
-    def positive_energies(self) -> builtins.list[builtins.int]:
-        r"""
-        Return edge IDs whose on-shell energies enter with positive sign.
-
-        Examples
-        --------
-        Using the setup in the ``CffSurface`` class example:
-
-        >>> positive_edges = surface.positive_energies
-        """
-    @property
-    def negative_energies(self) -> builtins.list[builtins.int]:
-        r"""
-        Return edge IDs whose on-shell energies enter with negative sign.
-
-        Examples
-        --------
-        Using the setup in the ``CffSurface`` class example:
-
-        >>> negative_edges = surface.negative_energies
-        """
-    @property
-    def external_shift(self) -> builtins.list[tuple[builtins.int, builtins.int]]:
-        r"""
-        Return external edge IDs and their integer shift coefficients.
-
-        Examples
-        --------
-        Using the setup in the ``CffSurface`` class example:
-
-        >>> external_energy_shift = surface.external_shift
-        """
-    @property
-    def vertices(self) -> builtins.list[builtins.int]:
-        r"""
-        Return the original diagram vertex IDs enclosed by this surface.
-
-        Contracted CFF vertices retain the identities of all interaction
-        vertices they contain, including for selected subgraphs.
-
-        Examples
-        --------
-        Using the setup in the ``CffSurface`` class example:
-
-        >>> region_vertices = surface.vertices
-        """
-    def __repr__(self) -> builtins.str:
-        r"""
-        Return the surface's symbolic name, or its category for special surfaces.
-
-        Examples
-        --------
-        Using the setup in the ``CffSurface`` class example:
-
-        >>> print(surface)  # Symbolica denominator variable, for example feynkit_cff::η(0)
         """
 
 @typing.final
@@ -1179,7 +974,7 @@ class CffSurfaceGroup:
     >>> process = model.process(["phi", "phi"], ["phi", "phi"])
     >>> result = process.generate_diagrams(loops=1)
     >>> diagram = result.diagrams[0]
-    >>> result = diagram.build_cff()
+    >>> result = diagram.integrate_energy(method="cff")
     >>> group = result.raised_surface_groups()[0]
     >>> coefficients = result.pole_coefficients(group)
     """
@@ -1196,7 +991,7 @@ class CffSurfaceGroup:
         >>> assert highest_pole >= 1
         """
     @property
-    def surfaces(self) -> builtins.list[CffSurface]:
+    def surfaces(self) -> builtins.list[EnergySurface]:
         r"""
         Canonical energy surfaces identified by this group.
 
@@ -1205,6 +1000,22 @@ class CffSurfaceGroup:
         Using the setup in the ``CffSurfaceGroup`` class example:
 
         >>> equivalent_surfaces = group.surfaces
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Summarize the equivalent surfaces and maximum pole order.
+
+        Examples
+        --------
+        >>> text = repr(group)
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Render equivalent surface definitions and their maximum pole order.
+
+        Examples
+        --------
+        >>> html = group._repr_html_()
         """
 
 @typing.final
@@ -1432,6 +1243,123 @@ class Coupling:
             IPython pretty printer receiving the text.
         cycle : bool
             Whether the object occurs recursively in the current display.
+        """
+
+@typing.final
+class CrossFreeFamily:
+    r"""
+    One cross-free family of denominator surfaces in a CFF orientation.
+
+    ``factors`` records signed surfaces and their multiplicities. Its expression
+    is the product of ``coefficient``, ``numerator`` and the inverse of every
+    entry in ``factors``. Summing these expressions reproduces the parent
+    orientation. Generalized numerator sampling can produce several weighted
+    contributions with the same geometric family but different ``energy_map``s.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> result = diagram.integrate_energy(method="cff")
+    >>> family = result.orientations[0].families[0]
+    >>> expression = family.to_expression()
+    """
+    @property
+    def id(self) -> builtins.int:
+        r"""
+        Family index within its orientation.
+
+        Examples
+        --------
+        >>> index = family.id
+        """
+    @property
+    def factors(self) -> builtins.list[SurfaceFactor]:
+        r"""
+        Signed denominator factors, grouping repeated surfaces into powers.
+
+        Examples
+        --------
+        >>> denominators = [f.to_expression() for f in family.factors]
+        """
+    @property
+    def coefficient(self) -> TensorExpression:
+        r"""
+        Signed coefficient and on-shell factors multiplying this family's numerator.
+
+        Examples
+        --------
+        >>> coefficient = family.coefficient
+        """
+    @property
+    def numerator(self) -> TensorExpression:
+        r"""
+        Evaluated numerator, including any generated numerator surface factors.
+
+        Examples
+        --------
+        >>> numerator = family.numerator
+        """
+    @property
+    def energy_map(self) -> builtins.dict[builtins.int, Expression]:
+        r"""
+        Edge-energy substitutions used to evaluate this contribution's numerator.
+
+        Keys are physical edge IDs; values replace Q(edge, cind(0)). Empty for
+        topology-only scalar families. These sampling maps need not be on-shell cuts.
+
+        Examples
+        --------
+        >>> substitutions = family.energy_map
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Summarize this family's orientation, index and denominator factors.
+
+        Examples
+        --------
+        >>> text = repr(family)
+        """
+    def to_expression(self, *, expand_surfaces: builtins.bool = True) -> TensorExpression:
+        r"""
+        Return this family's contribution, including the common energy prefactor.
+
+        Examples
+        --------
+        Using the setup in the class example:
+
+        >>> expression = family.to_expression()
+
+        Parameters
+        ----------
+        expand_surfaces : bool, optional
+            Replace stored surface placeholders by affine energy definitions.
+            Defaults to True. On-shell energies remain symbolic in either case.
+
+        Returns
+        -------
+        TensorExpression
+            The complete family contribution, including its evaluated numerator and energy factors.
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Inspect only this family's contribution and surface circlings.
+
+        Examples
+        --------
+        >>> html = family._repr_html_()
+        """
+    def _display_(self) -> typing.Any:
+        r"""
+        Display this family in Marimo.
+
+        Examples
+        --------
+        >>> view = family._display_()
         """
 
 @typing.final
@@ -2174,6 +2102,123 @@ class DiagramHalfEdge:
         """
 
 @typing.final
+class DiagramStyle:
+    r"""
+    Particle and momentum presentation for Feynman diagrams.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> style = hep.DiagramStyle(show_momentum=True)
+    >>> style.show_momentum
+    True
+    """
+    @property
+    def show_particle(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show particle labels; None preserves the renderer default.
+
+        Examples
+        --------
+        >>> hep.DiagramStyle(show_particle=True).show_particle
+        True
+        """
+    @property
+    def show_momentum(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show momentum labels; None follows the render request.
+
+        Examples
+        --------
+        >>> hep.DiagramStyle(show_momentum=True).show_momentum
+        True
+        """
+    @property
+    def show_edge_index(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show the physical edge indices.
+
+        Examples
+        --------
+        >>> hep.DiagramStyle(show_edge_index=True).show_edge_index
+        True
+        """
+    @property
+    def show_node_index(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show the physical vertex indices.
+
+        Examples
+        --------
+        >>> hep.DiagramStyle(show_node_index=True).show_node_index
+        True
+        """
+    @property
+    def momentum_arrows(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Draw momentum arrows beside particle lines.
+
+        Examples
+        --------
+        >>> hep.DiagramStyle(momentum_arrows=True).momentum_arrows
+        True
+        """
+    @property
+    def split_initial_state(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Separate the incoming states of a cross-section drawing.
+
+        Examples
+        --------
+        >>> hep.DiagramStyle(split_initial_state=True).split_initial_state
+        True
+        """
+    @property
+    def debug(self) -> typing.Optional[builtins.bool]:
+        r"""
+        Show both vertex and edge indices unless individually overridden.
+
+        Examples
+        --------
+        >>> hep.DiagramStyle(debug=True).debug
+        True
+        """
+    def __new__(cls, *, show_particle: typing.Optional[builtins.bool] = None, show_momentum: typing.Optional[builtins.bool] = None, show_edge_index: typing.Optional[builtins.bool] = None, show_node_index: typing.Optional[builtins.bool] = None, momentum_arrows: typing.Optional[builtins.bool] = None, split_initial_state: typing.Optional[builtins.bool] = None, debug: typing.Optional[builtins.bool] = None) -> DiagramStyle:
+        r"""
+        Select physics presentation without changing graph layout or drawing settings.
+
+        Examples
+        --------
+        >>> style = hep.DiagramStyle(show_particle=False, show_momentum=True)
+
+        Parameters
+        ----------
+        show_particle : bool or None, optional
+            Show particle labels; None preserves the renderer default.
+        show_momentum : bool or None, optional
+            Show momentum labels; None follows the render request.
+        show_edge_index : bool or None, optional
+            Show the physical edge indices.
+        show_node_index : bool or None, optional
+            Show the physical vertex indices.
+        momentum_arrows : bool or None, optional
+            Draw momentum arrows beside particle lines.
+        split_initial_state : bool or None, optional
+            Separate the incoming states of a cross-section drawing.
+        debug : bool or None, optional
+            Show both vertex and edge indices unless individually overridden.
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Summarize the explicitly selected physics options.
+
+        Examples
+        --------
+        >>> repr(hep.DiagramStyle())
+        'DiagramStyle()'
+        """
+
+@typing.final
 class DiagramThresholdCandidate:
     r"""
     A topology threshold partition, independent of the requested physical final state.
@@ -2350,6 +2395,152 @@ class DiagramVertex:
             The IPython pretty-printer object.
         cycle : bool
             Whether this object is part of a recursive formatting cycle.
+        """
+
+@typing.final
+class EnergySurface:
+    r"""
+    A stored affine energy denominator in a CFF or LTD representation.
+
+    Its definition has the form
+
+    $$
+    s=c_0+\sum_e c_e E_e+\sum_a d_a Q_a^0.
+    $$
+
+    ``energy_coefficients`` stores :math:`c_e`, ``external_shift`` stores
+    :math:`d_a`, and ``constant`` stores :math:`c_0`. Both coefficient mappings
+    use physical diagram edge IDs. Nonzero energy coefficients of one sign
+    define an E-surface; mixed signs define an H-surface.
+
+    ``symbol`` and ``index`` are local to the representation and surface category.
+    The ``OSE`` symbols inside the definition are shared between representations.
+    A ``SurfaceFactor`` records an occurrence's sign and multiplicity without
+    changing this stored definition.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> rep = diagram.integrate_energy(method="cff")
+    >>> surface = rep.surfaces[0]
+    >>> expression = surface.to_expression()
+    """
+    @property
+    def origin(self) -> builtins.str:
+        r"""
+        Whether this is a physical surface or an algebraic helper ("physical" or "helper").
+
+        Helper factors in generalized CFF need not correspond to a graph region.
+
+        Examples
+        --------
+        >>> provenance = surface.origin
+        """
+    @property
+    def numerator_only(self) -> builtins.bool:
+        r"""
+        Whether this affine expression is used only as a numerator factor.
+
+        Examples
+        --------
+        >>> numerator_only = surface.numerator_only
+        """
+    @property
+    def index(self) -> builtins.int:
+        r"""
+        Index within its surface category and representation.
+
+        Examples
+        --------
+        >>> value = surface.index
+        """
+    @property
+    def kind(self) -> builtins.str:
+        r"""
+        ``"E"`` for consistent nonzero energy signs, ``"H"`` for mixed signs.
+
+        Examples
+        --------
+        >>> value = surface.kind
+        """
+    @property
+    def symbol(self) -> Expression:
+        r"""
+        Result-local Symbolica placeholder for this stored surface.
+
+        Examples
+        --------
+        >>> value = surface.symbol
+        """
+    @property
+    def energy_coefficients(self) -> builtins.dict[builtins.int, Expression]:
+        r"""
+        Exact signed OSE coefficients, keyed by physical edge ID.
+
+        Examples
+        --------
+        >>> value = surface.energy_coefficients
+        """
+    @property
+    def external_shift(self) -> builtins.dict[builtins.int, Expression]:
+        r"""
+        Exact coefficients of external ``gammalooprs::Q(edge, spenso::cind(0))``.
+
+        Examples
+        --------
+        >>> value = surface.external_shift
+        """
+    @property
+    def constant(self) -> Expression:
+        r"""
+        Energy-independent additive term.
+
+        Examples
+        --------
+        >>> value = surface.constant
+        """
+    @property
+    def vertices(self) -> builtins.list[builtins.int]:
+        r"""
+        CFF region vertices; LTD regions belong to individual surface occurrences.
+
+        Examples
+        --------
+        >>> value = surface.vertices
+        """
+    def to_expression(self) -> TensorExpression:
+        r"""
+        Return the affine definition :math:`c_0+\sum_e c_e E_e+\sum_a d_a Q_a^0`.
+
+        Examples
+        --------
+        >>> expression = surface.to_expression()
+
+        Returns
+        -------
+        TensorExpression
+            Signed energy combination in physical ``OSE`` and external ``Q`` symbols.
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Show the stored surface and its affine definition.
+
+        Examples
+        --------
+        >>> print(surface)
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Render the stored surface's mathematical definition and E/H category.
+
+        Examples
+        --------
+        >>> html = surface._repr_html_()
         """
 
 @typing.final
@@ -2550,7 +2741,7 @@ class FeynmanDiagram:
     >>> assert family.is_complete
     """
     @property
-    def linnet_selection(self) -> linnet.Subgraph:
+    def linnet_selection(self) -> symbolica.community.graph.Subgraph:
         r"""
         Return the canonical Linnet selection representing this physics region.
 
@@ -2728,7 +2919,121 @@ class FeynmanDiagram:
 
         >>> external_particles = [edge.particle_name for edge in diagram.external_edges]
         """
-    def to_linnet(self) -> linnet.Graph:
+    @overload
+    def integrate_energy(self, *, method: typing.Literal["cff"], max_orientations: typing.Optional[int] = None, fixed_orientations: typing.Optional[typing.Mapping[int, bool]] = None, contracted_edges: typing.Optional[typing.Sequence[int]] = None, initial_state_edges: typing.Optional[typing.Sequence[int]] = None, numerator: typing.Optional[symbolica.Expression] = None) -> CffRepresentation:
+        r"""
+        Integrate propagators and an optional CFF numerator over loop energies.
+
+        The measure is :math:`d\ell^0/(2\pi i)` per loop, with contours closed below.
+        Both representations include contour signs and on-shell factors, and share
+        ``gammalooprs::OSE(e)`` for :math:`E_e=\sqrt{\boldsymbol{q}_e^2+m_e^2}`.
+        CFF accepts a polynomial numerator; couplings, graph weights and the spatial measure are separate.
+
+        CFF supports subgraph selections and the constraints below. LTD requires a
+        complete ordinary diagram and uses its stored ordered loop-momentum basis.
+        Display either result directly to explore its terms and surfaces in a notebook.
+
+        Examples
+        --------
+        Using the setup in the ``FeynmanDiagram`` class example:
+
+        >>> cff = diagram.integrate_energy(method="cff")
+        >>> ltd = diagram.integrate_energy(method="ltd")
+        >>> expression = cff.to_expression()
+
+        Parameters
+        ----------
+        method : {"cff", "ltd"}
+            Required representation choice. Literal arguments retain the concrete
+            return type in editors and type checkers.
+        max_orientations : int or None, optional
+            CFF-only limit on candidate orientations. None imposes no limit.
+        fixed_orientations : mapping[int, bool] or None, optional
+            CFF-only constraints by physical edge ID: False keeps the stored
+            direction; True reverses it. None leaves orientations unconstrained.
+        contracted_edges : sequence[int] or None, optional
+            CFF-only physical edge IDs to contract before constructing surfaces.
+            None contracts no edges.
+        initial_state_edges : sequence[int] or None, optional
+            CFF-only physical edge IDs whose on-shell energies are moved into
+            external energy shifts. None performs no such replacements.
+        numerator : Expression or None, optional
+            CFF polynomial in ``gammalooprs::Q(e, spenso::cind(0))``, using physical
+            internal edge IDs. Degree bounds are inferred before momentum routing.
+            None selects scalar topology generation. Supplying a numerator uses the
+            generalized backend and currently requires an unconstrained complete
+            diagram. Express energy dependence explicitly; loop-basis energies and
+            unevaluated energy-dependent functions are unsupported.
+
+        Returns
+        -------
+        CffRepresentation or LtdRepresentation
+            The selected scalar energy representation, with structured term and
+            surface inspection, expression conversion and notebook display.
+
+        Raises
+        ------
+        ValueError
+            The method is unknown, or CFF-only options are supplied for LTD.
+        """
+    @overload
+    def integrate_energy(self, *, method: typing.Literal["ltd"]) -> LtdRepresentation:
+        r"""
+        Integrate propagators and an optional CFF numerator over loop energies.
+
+        The measure is :math:`d\ell^0/(2\pi i)` per loop, with contours closed below.
+        Both representations include contour signs and on-shell factors, and share
+        ``gammalooprs::OSE(e)`` for :math:`E_e=\sqrt{\boldsymbol{q}_e^2+m_e^2}`.
+        CFF accepts a polynomial numerator; couplings, graph weights and the spatial measure are separate.
+
+        CFF supports subgraph selections and the constraints below. LTD requires a
+        complete ordinary diagram and uses its stored ordered loop-momentum basis.
+        Display either result directly to explore its terms and surfaces in a notebook.
+
+        Examples
+        --------
+        Using the setup in the ``FeynmanDiagram`` class example:
+
+        >>> cff = diagram.integrate_energy(method="cff")
+        >>> ltd = diagram.integrate_energy(method="ltd")
+        >>> expression = cff.to_expression()
+
+        Parameters
+        ----------
+        method : {"cff", "ltd"}
+            Required representation choice. Literal arguments retain the concrete
+            return type in editors and type checkers.
+        max_orientations : int or None, optional
+            CFF-only limit on candidate orientations. None imposes no limit.
+        fixed_orientations : mapping[int, bool] or None, optional
+            CFF-only constraints by physical edge ID: False keeps the stored
+            direction; True reverses it. None leaves orientations unconstrained.
+        contracted_edges : sequence[int] or None, optional
+            CFF-only physical edge IDs to contract before constructing surfaces.
+            None contracts no edges.
+        initial_state_edges : sequence[int] or None, optional
+            CFF-only physical edge IDs whose on-shell energies are moved into
+            external energy shifts. None performs no such replacements.
+        numerator : Expression or None, optional
+            CFF polynomial in ``gammalooprs::Q(e, spenso::cind(0))``, using physical
+            internal edge IDs. Degree bounds are inferred before momentum routing.
+            None selects scalar topology generation. Supplying a numerator uses the
+            generalized backend and currently requires an unconstrained complete
+            diagram. Express energy dependence explicitly; loop-basis energies and
+            unevaluated energy-dependent functions are unsupported.
+
+        Returns
+        -------
+        CffRepresentation or LtdRepresentation
+            The selected scalar energy representation, with structured term and
+            surface inspection, expression conversion and notebook display.
+
+        Raises
+        ------
+        ValueError
+            The method is unknown, or CFF-only options are supplied for LTD.
+        """
+    def to_graph(self) -> symbolica.community.graph.Graph:
         r"""
         Return the canonical installed Linnet graph with physics objects as payloads.
 
@@ -2740,10 +3045,10 @@ class FeynmanDiagram:
         --------
         Using the setup in the ``FeynmanDiagram`` class example:
 
-        >>> graph = diagram.to_linnet()
+        >>> graph = diagram.to_graph()
         >>> gluons = graph.filter(edge=lambda edge: edge.data.particle_name == "g")
         """
-    def subgraph(self, selection: Subgraph | linnet.Subgraph | None = None, *, nodes: typing.Optional[typing.Sequence[builtins.int]] = None, edges: typing.Optional[typing.Sequence[builtins.int]] = None, half_edges: typing.Optional[typing.Sequence[builtins.int]] = None) -> Subgraph:
+    def subgraph(self, selection: Subgraph | symbolica.community.graph.Subgraph | None = None, *, nodes: typing.Optional[typing.Sequence[builtins.int]] = None, edges: typing.Optional[typing.Sequence[builtins.int]] = None, half_edges: typing.Optional[typing.Sequence[builtins.int]] = None) -> Subgraph:
         r"""
         Select graph elements using native diagram IDs, or import a graph-bound selection.
         Nested selections intersect this region and retain its immutable original diagram.
@@ -2757,7 +3062,7 @@ class FeynmanDiagram:
 
         Parameters
         ----------
-        selection : Subgraph or linnet.Subgraph or None, optional
+        selection : Subgraph or symbolica.community.graph.Subgraph or None, optional
             Existing selection from the same original diagram; exclusive with element IDs.
         nodes : list[int] or None, optional
             Diagram vertex IDs to include, with all incident half-edges.
@@ -3115,7 +3420,7 @@ class FeynmanDiagram:
             Assumptions on routed momentum names and the Lorentz dimension.
             None uses the shared symbolic dimension with no on-shell assumptions.
         """
-    def numerator_expression(self, *, without: Subgraph | linnet.Subgraph | None = None, in_lmb: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None) -> TensorExpression:
+    def numerator_expression(self, *, without: Subgraph | symbolica.community.graph.Subgraph | None = None, in_lmb: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None) -> TensorExpression:
         r"""
         Return the diagram numerator as a Spenso TensorExpression.
 
@@ -3131,7 +3436,7 @@ class FeynmanDiagram:
 
         Parameters
         ----------
-        without : Subgraph or linnet.Subgraph or None, optional
+        without : Subgraph or symbolica.community.graph.Subgraph or None, optional
             Ignored region, using GammaLoop boundary and local-factor selection semantics.
         in_lmb : bool, optional
             Express edge momenta in the diagram's stored loop-momentum basis.
@@ -3374,7 +3679,7 @@ class FeynmanDiagram:
         parent : LoopMomentumBasis
             Parent coordinates belonging to this same diagram instance.
         """
-    def contracted_momentum_basis(self, contracted: Subgraph | linnet.Subgraph) -> LoopMomentumBasis:
+    def contracted_momentum_basis(self, contracted: Subgraph | symbolica.community.graph.Subgraph) -> LoopMomentumBasis:
         r"""
         Route the selected region after contracting complete internal edges.
 
@@ -3387,7 +3692,7 @@ class FeynmanDiagram:
 
         Parameters
         ----------
-        contracted : Subgraph or linnet.Subgraph
+        contracted : Subgraph or symbolica.community.graph.Subgraph
             Complete internal edges to contract, selected from this diagram.
         """
     def superficial_degree_of_divergence(self, *, dimension: builtins.int = 4) -> builtins.int:
@@ -3426,34 +3731,6 @@ class FeynmanDiagram:
 
         >>> diagram.validate()
         """
-    def build_cff(self, *, max_orientations: typing.Optional[builtins.int] = None, fixed_orientations: typing.Optional[typing.Mapping[builtins.int, builtins.bool]] = None, contracted_edges: typing.Optional[typing.Sequence[builtins.int]] = None, initial_state_edges: typing.Optional[typing.Sequence[builtins.int]] = None) -> CffResult:
-        r"""
-        Build the diagram's Cross-Free Family representation.
-
-        Edge constraints use the stable integer IDs exposed by
-        ``diagram.edges``. ``False`` fixes an edge in its stored direction and
-        ``True`` reverses it.
-
-        Examples
-        --------
-        Using the setup in the ``FeynmanDiagram`` class example:
-
-        Construct and display the causal denominators of a one-loop diagram:
-
-        >>> cff = diagram.build_cff(max_orientations=10_000)
-        >>> cff.to_expression()  # native Symbolica display in a notebook
-
-        Parameters
-        ----------
-        max_orientations : int or None, optional
-            Maximum number of candidate orientations to inspect.
-        fixed_orientations : mapping[int, bool] or None, optional
-            Edge IDs mapped to stored (false) or reversed (true) directions.
-        contracted_edges : iterable[int], optional
-            Edge IDs to contract before constructing denominator surfaces.
-        initial_state_edges : iterable[int], optional
-            Edge IDs to classify as incoming external lines.
-        """
     def to_json(self) -> builtins.str:
         r"""
         Serialize the complete diagram to JSON text.
@@ -3478,7 +3755,7 @@ class FeynmanDiagram:
         >>> restored = hep.FeynmanDiagram.from_dot(model, dot)
         >>> restored.validate()
         """
-    def to_linnest(self, *, config: typing.Optional[RenderSettings] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
+    def to_linnest(self, *, config: typing.Optional[RenderSettings] = None, style: typing.Optional[DiagramStyle] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | symbolica.community.graph.Subgraph | None = None) -> builtins.str:
         r"""
         Export a self-contained Typst document embedding the rendered SVG.
 
@@ -3495,16 +3772,18 @@ class FeynmanDiagram:
 
         Parameters
         ----------
+        style : DiagramStyle or None, optional
+            Particle, momentum, and physical index presentation.
         config : RenderSettings or None, optional
-            Layout, drawing, style and physics settings, as in ``render``.
+            Layout, drawing, and graph style settings, as in ``render``.
         momenta : bool, optional
             Draw momentum arrows and labels in the stored basis.
         lmb : LoopMomentumBasis or None, optional
             Routing from this diagram; also enables momentum display.
-        highlight : Subgraph or linnet.Subgraph or None, optional
+        highlight : Subgraph or symbolica.community.graph.Subgraph or None, optional
             Region to highlight in the complete diagram.
         """
-    def render(self, *, config: typing.Optional[RenderSettings] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> DiagramRender:
+    def render(self, *, config: typing.Optional[RenderSettings] = None, style: typing.Optional[DiagramStyle] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | symbolica.community.graph.Subgraph | None = None) -> DiagramRender:
         r"""
         Create a displayable snapshot using the shared physics renderer.
 
@@ -3516,15 +3795,18 @@ class FeynmanDiagram:
         --------
         Using the setup in the ``FeynmanDiagram`` class example:
 
-        >>> settings = hep.RenderSettings(
-        ...     layout=hep.LayoutSettings(impred_steps=100), show_particle=False)
-        >>> drawing = diagram.render(momenta=True, config=settings)
+        >>> from symbolica.community.graph import LayoutSettings, RenderSettings
+        >>> settings = RenderSettings(
+        ...     layouts=LayoutSettings(impred_steps=100))
+        >>> drawing = diagram.render(momenta=True, config=settings, style=hep.DiagramStyle(show_particle=False))
         >>> drawing
         >>> svg = drawing.to_svg()
         >>> drawing = diagram.render(lmb=next(iter(diagram.loop_momentum_bases())))
 
         Parameters
         ----------
+        style : DiagramStyle or None, optional
+            Particle, momentum, and physical index presentation.
         config : RenderSettings or None, optional
             Immutable layout, styling, and physics overrides. Use ``help(RenderSettings)``
             and ``help(LayoutSettings)`` to discover the supported options.
@@ -3532,15 +3814,15 @@ class FeynmanDiagram:
             ``split_initial_state=False`` to draw the sewn graph.
         momenta : bool, optional
             Show momentum arrows and labels routed in the diagram's stored basis.
-            Explicit physics settings in ``config`` override these display defaults.
+            Explicit fields in ``style`` override these display defaults.
         lmb : LoopMomentumBasis or None, optional
             Explicit routing from this diagram; also enables momentum display.
             Rendering never changes the diagram's stored loop-momentum basis.
-        highlight : Subgraph or linnet.Subgraph or None, optional
+        highlight : Subgraph or symbolica.community.graph.Subgraph or None, optional
             Highlight a region while preserving the full diagram as muted context.
             A Subgraph highlights its own region by default.
         """
-    def to_html(self, *, config: typing.Optional[RenderSettings] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | linnet.Subgraph | None = None) -> builtins.str:
+    def to_html(self, *, config: typing.Optional[RenderSettings] = None, style: typing.Optional[DiagramStyle] = None, momenta: builtins.bool = False, lmb: typing.Optional[LoopMomentumBasis] = None, highlight: Subgraph | symbolica.community.graph.Subgraph | None = None) -> builtins.str:
         r"""
         Render an HTML figure with the same options and hover information as ``render``.
 
@@ -3553,13 +3835,15 @@ class FeynmanDiagram:
 
         Parameters
         ----------
+        style : DiagramStyle or None, optional
+            Particle, momentum, and physical index presentation.
         config : RenderSettings or None, optional
-            Layout, drawing, style and physics settings, as in ``render``.
+            Layout, drawing, and graph style settings, as in ``render``.
         momenta : bool, optional
             Draw momentum arrows and labels in the stored basis.
         lmb : LoopMomentumBasis or None, optional
             Routing from this diagram; also enables momentum display.
-        highlight : Subgraph or linnet.Subgraph or None, optional
+        highlight : Subgraph or symbolica.community.graph.Subgraph or None, optional
             Region to highlight in the complete diagram.
         """
     def _repr_html_(self) -> builtins.str:
@@ -5958,7 +6242,7 @@ class Kinematics:
             Final-state on-shell momenta. Their scalar products determine the
             total invariant mass squared through this kinematic context.
         """
-    @typing.overload
+    @overload
     def apply(self, expression: TensorExpression) -> TensorExpression:
         r"""
         Substitute scalar products without mutating global assumptions.
@@ -5981,7 +6265,7 @@ class Kinematics:
         expression : Expression
             Expression with compact scalar products.
         """
-    @typing.overload
+    @overload
     def apply(self, expression: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]) -> Expression:
         r"""
         Substitute scalar products without mutating global assumptions.
@@ -6253,7 +6537,7 @@ class LoopMomentumBasis:
         cycle : bool
             Whether this object is part of a recursive formatting cycle.
         """
-    @typing.overload
+    @overload
     def route_expression(self, expression: TensorExpression, *, loop_momenta: typing.Optional[typing.Sequence[TensorName]] = None, external_momenta: typing.Optional[typing.Sequence[TensorName]] = None) -> TensorExpression:
         r"""
         Express edge momenta in this basis while retaining tensor index arguments.
@@ -6274,7 +6558,7 @@ class LoopMomentumBasis:
             Vector names in ``external_edges`` order, excluding ``dependent_externals``.
             None retains indexed ``P`` calls. Naming also applies to already routed vectors.
         """
-    @typing.overload
+    @overload
     def route_expression(self, expression: Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal], *, loop_momenta: typing.Optional[typing.Sequence[TensorName]] = None, external_momenta: typing.Optional[typing.Sequence[TensorName]] = None) -> Expression:
         r"""
         Express edge momenta in this basis while retaining tensor index arguments.
@@ -6295,7 +6579,7 @@ class LoopMomentumBasis:
             Vector names in ``external_edges`` order, excluding ``dependent_externals``.
             None retains indexed ``P`` calls. Naming also applies to already routed vectors.
         """
-    @typing.overload
+    @overload
     def route(self, loop_momenta: typing.Sequence[ThreeMomentum], external_momenta: typing.Sequence[ThreeMomentum]) -> dict[int, ThreeMomentum]:
         r"""
         Route four-momenta through every diagram edge.
@@ -6318,7 +6602,7 @@ class LoopMomentumBasis:
         external_momenta : sequence[FourMomentum]
             External momenta in ``basis.external_edges`` order.
         """
-    @typing.overload
+    @overload
     def route(self, loop_momenta: typing.Sequence[FourMomentum], external_momenta: typing.Sequence[FourMomentum]) -> dict[int, FourMomentum]:
         r"""
         Route four-momenta through every diagram edge.
@@ -6434,6 +6718,387 @@ class LorentzStructure:
             IPython pretty printer receiving the text.
         cycle : bool
             Whether the object occurs recursively in the current display.
+        """
+
+@typing.final
+class LtdReport:
+    r"""
+    Generation counts for an LTD representation.
+
+    Distinguish retained pole assignments from spanning trees: several residues
+    may share a tree, and a higher-order residue may contain several terms.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> ltd = diagram.integrate_energy(method="ltd")
+    >>> report = ltd.report
+    >>> assert report.residues == len(ltd)
+    """
+    @property
+    def residues(self) -> builtins.int:
+        r"""
+        Number of retained signed pole assignments.
+
+        Examples
+        --------
+        >>> count = report.residues
+        """
+    @property
+    def trees(self) -> builtins.int:
+        r"""
+        Number of distinct spanning trees represented by the residues.
+
+        Examples
+        --------
+        >>> count = report.trees
+        """
+    @property
+    def unfolded_terms(self) -> builtins.int:
+        r"""
+        Number of additive denominator products, including higher-order residues.
+
+        Examples
+        --------
+        >>> count = report.unfolded_terms
+        """
+    @property
+    def interned_surfaces(self) -> builtins.int:
+        r"""
+        Number of distinct stored affine energy surfaces.
+
+        Examples
+        --------
+        >>> count = report.interned_surfaces
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Summarize the retained residues, spanning trees, terms and surfaces.
+
+        Examples
+        --------
+        >>> text = repr(report)
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Render LTD generation statistics as a compact table.
+
+        Examples
+        --------
+        >>> html = report._repr_html_()
+        """
+
+@typing.final
+class LtdRepresentation:
+    r"""
+    A scalar loop-energy integral in the loop-tree duality (LTD) representation.
+
+    Create with ``diagram.integrate_energy(method="ltd")``. Each residue puts
+    edges complementary to a spanning tree on shell at
+    :math:`q_e^0=\sigma_e E_e`, where :math:`\sigma_e\in\{-1,+1\}` and
+    :math:`E_e=\sqrt{\boldsymbol{q}_e^2+m_e^2}`. The ordered loop-momentum
+    basis and successive contours determine the retained pole assignments and
+    coefficients. A spanning tree alone does not determine the signs.
+
+    ``to_expression()`` sums the residues, including signed coefficients and
+    on-shell factors. The measure is :math:`d\ell^0/(2\pi i)` per loop, with
+    contours closed below, as in ``CffRepresentation``. Numerators, couplings,
+    graph weights and the spatial integration measure are excluded. Repeated
+    propagators are handled by higher-order residues.
+
+    Both representations use ``gammalooprs::OSE(e)`` for :math:`E_e` and
+    ``gammalooprs::Q(e, spenso::cind(0))`` for external energies; ``e`` is a
+    physical diagram edge ID. ``on_shell_energies`` supplies the routed square
+    roots. Impose external momentum conservation when comparing CFF and LTD.
+
+    Displaying the object opens the residue and surface-pair explorer in Marimo
+    or an HTML notebook. ``len(ltd)`` counts retained signed residues.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> ltd = diagram.integrate_energy(method="ltd")
+    >>> expression = ltd.to_expression()
+    >>> assert ltd.report.residues == len(ltd.residues)
+    """
+    @property
+    def residues(self) -> builtins.list[LtdResidue]:
+        r"""
+        Signed residues with tree, pole-sign and surface-pair inspection.
+
+        Examples
+        --------
+        >>> residue = ltd.residues[0]
+        """
+    @property
+    def surfaces(self) -> builtins.list[EnergySurface]:
+        r"""
+        All stored affine surfaces, with physical diagram edge IDs.
+
+        Examples
+        --------
+        >>> definitions = [s.to_expression() for s in ltd.surfaces]
+        """
+    @property
+    def diagram(self) -> FeynmanDiagram:
+        r"""
+        Originating diagram, retaining the ordered momentum routing and owner.
+
+        Examples
+        --------
+        >>> routing = ltd.diagram.loop_momentum_basis
+        """
+    @property
+    def on_shell_energies(self) -> builtins.dict[builtins.int, OnShellEnergy]:
+        r"""
+        Shared symbolic energies and routed square roots, keyed by physical edge ID.
+
+        Examples
+        --------
+        >>> definitions = [(e.symbol, e.to_expression()) for e in ltd.on_shell_energies.values()]
+        """
+    @property
+    def report(self) -> LtdReport:
+        r"""
+        Counts of retained residues, distinct trees, unfolded terms and surfaces.
+
+        Examples
+        --------
+        >>> assert ltd.report.residues == len(ltd.residues)
+        """
+    def to_expression(self, *, expand_surfaces: builtins.bool = True) -> TensorExpression:
+        r"""
+        Return the scalar loop-energy integral as a Symbolica expression.
+
+        Includes contour signs and on-shell energy factors for
+        :math:`d\ell^0/(2\pi i)` per loop, with contours closed below. Numerators,
+        couplings, graph weights and the spatial measure are excluded.
+        ``expand_surfaces`` expands affine denominators while leaving
+        ``gammalooprs::OSE(e)`` symbolic. Use ``on_shell_energies`` for their routed
+        definitions or custom evaluation.
+
+        Examples
+        --------
+        Using the setup in the class example:
+
+        >>> expression = ltd.to_expression()
+        >>> compact = ltd.to_expression(expand_surfaces=False)
+
+        Parameters
+        ----------
+        expand_surfaces : bool, optional
+            Replace surface placeholders by their affine energy definitions.
+            Defaults to True. False keeps placeholders local to this representation.
+
+        Returns
+        -------
+        TensorExpression
+            Rank-zero tensor summing all residue contributions and prefactors.
+        """
+    def __len__(self) -> builtins.int:
+        r"""
+        Return the number of signed residues.
+
+        Examples
+        --------
+        Using the setup in ``LtdRepresentation``:
+
+        >>> residue_count = len(ltd)
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Summarize the native LTD result.
+
+        Examples
+        --------
+        Using the setup in ``LtdRepresentation``:
+
+        >>> print(ltd)
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Explore native residues, surface pairs, and region-relative pole signs.
+
+        Click cuts to navigate residues, tree edges to switch their pair, and
+        hover cuts to trace the cycle fixing their signs in the ordered routing.
+
+        Examples
+        --------
+        Using the setup in ``LtdRepresentation``:
+
+        >>> from IPython.display import display
+        >>> display(ltd)
+        """
+    def _display_(self) -> typing.Any:
+        r"""
+        Embed the explorer in Marimo's script-enabled notebook frame.
+
+        Examples
+        --------
+        Using the setup in ``LtdRepresentation``:
+
+        >>> presentation = ltd._display_()
+        """
+
+@typing.final
+class LtdResidue:
+    r"""
+    One retained signed residue in an LTD representation.
+
+    The cut edges obey :math:`q_e^0=\sigma_e E_e`, with signs relative to the
+    stored momentum arrows. The diagram's ordered routing and contours determine
+    these assignments; several residues may share a spanning tree. Higher-order
+    poles can contribute several additive terms to one residue.
+
+    ``energy_map`` gives every internal energy at the residue. Substituting these
+    energies into an uncut propagator gives the ``surface_pairs`` factors
+    :math:`q_e^0-E_e` and :math:`q_e^0+E_e`.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> ltd = diagram.integrate_energy(method="ltd")
+    >>> residue = ltd.residues[0]
+    >>> signs = residue.pole_signs
+    """
+    @property
+    def id(self) -> builtins.int:
+        r"""
+        Stable residue index within this representation.
+
+        Examples
+        --------
+        >>> index = residue.id
+        """
+    @property
+    def cut_edges(self) -> builtins.list[builtins.int]:
+        r"""
+        Physical IDs of the on-shell edges complementary to the spanning tree.
+
+        Examples
+        --------
+        >>> cuts = residue.cut_edges
+        """
+    @property
+    def tree_edges(self) -> builtins.list[builtins.int]:
+        r"""
+        Physical IDs of uncut internal edges in the spanning tree.
+
+        Examples
+        --------
+        >>> tree = residue.tree_edges
+        """
+    @property
+    def pole_signs(self) -> builtins.dict[builtins.int, builtins.int]:
+        r"""
+        Cut-edge pole signs relative to the diagram's stored momentum arrows.
+
+        Each entry fixes :math:`q_e^0=\sigma_e E_e`, with
+        :math:`\sigma_e\in\{-1,+1\}`. The ordered routing and successive energy
+        contours determine these signs for the entire residue. Selecting another
+        surface factor does not change them.
+
+        Examples
+        --------
+        >>> assignments = residue.pole_signs
+
+        Returns
+        -------
+        dict[int, int]
+            Physical cut-edge IDs mapped to their pole signs.
+        """
+    @property
+    def energy_map(self) -> builtins.dict[builtins.int, Expression]:
+        r"""
+        Internal energies :math:`q_e^0` evaluated at this residue.
+
+        Examples
+        --------
+        >>> energies = residue.energy_map
+
+        Returns
+        -------
+        dict[int, Expression]
+            Physical internal-edge IDs mapped to affine combinations of ``OSE`` and
+            external ``Q`` symbols. Cut entries equal :math:`\sigma_e E_e`.
+        """
+    @property
+    def surface_pairs(self) -> builtins.dict[builtins.int, SurfacePair]:
+        r"""
+        The two factors of each surviving uncut propagator.
+
+        Each pair preserves :math:`q_e^0-E_e` and :math:`q_e^0+E_e` after evaluating
+        :math:`q_e^0` at the residue. Each factor's sign relates it to its stored
+        surface; it does not change the cut-edge pole assignment.
+
+        Examples
+        --------
+        >>> pairs = residue.surface_pairs
+
+        Returns
+        -------
+        dict[int, SurfacePair]
+            Physical tree-edge IDs mapped to their ordered minus/plus factors.
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Summarize this residue's cut edges and pole signs.
+
+        Examples
+        --------
+        >>> text = repr(residue)
+        """
+    def to_expression(self, *, expand_surfaces: builtins.bool = True) -> TensorExpression:
+        r"""
+        Return this residue's contribution, including its signed coefficient.
+
+        Examples
+        --------
+        Using the setup in the class example:
+
+        >>> expression = residue.to_expression()
+
+        Parameters
+        ----------
+        expand_surfaces : bool, optional
+            Replace stored surface placeholders by affine energy definitions.
+            Defaults to True. On-shell energies remain symbolic in either case.
+
+        Returns
+        -------
+        TensorExpression
+            The scalar residue, including multiplicities and on-shell energy factors.
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Inspect this residue's expression, fixed cuts and surface pairs.
+
+        Examples
+        --------
+        >>> html = residue._repr_html_()
+        """
+    def _display_(self) -> typing.Any:
+        r"""
+        Display this residue in Marimo.
+
+        Examples
+        --------
+        >>> view = residue._display_()
         """
 
 @typing.final
@@ -7067,7 +7732,7 @@ class Model:
         cycle : bool
             Whether this object is part of a recursive formatting cycle.
         """
-    @typing.overload
+    @overload
     def expand_couplings(self, expression: TensorExpression) -> TensorExpression:
         r"""
         Replace named UFO coefficients by their analytic model expressions.
@@ -7085,7 +7750,7 @@ class Model:
         expression : Expression
             Symbolica expression containing named couplings from this model.
         """
-    @typing.overload
+    @overload
     def expand_couplings(self, expression: Expression) -> Expression:
         r"""
         Replace named UFO coefficients by their analytic model expressions.
@@ -7441,6 +8106,84 @@ class NumeratorGrouping:
             Try an exact canonical comparison before numerical sampling.
         symmetric_polarizations : bool, optional
             Reuse wavefunction samples across the two sides of a sewn external state.
+        """
+
+@typing.final
+class OnShellEnergy:
+    r"""
+    A symbolic on-shell energy shared by CFF and LTD.
+
+    ``symbol`` is ``gammalooprs::OSE(e)``, with physical diagram edge ID ``e``.
+    ``to_expression()`` returns the positive-root definition
+
+    $$
+    E_e=\sqrt{\boldsymbol{q}_e^2+m_e^2}.
+    $$
+
+    The spatial momentum is routed through the diagram's loop-momentum basis.
+    Its ``K(i, cind(a))`` and ``P(i, cind(a))`` coordinates use basis positions
+    ``i`` and Cartesian components ``a`` equal to 1, 2 or 3. These positions are
+    not physical edge IDs. Surface expansion leaves ``OSE`` symbolic; substitute
+    this definition for spatial evaluation, or supply your own energy evaluator.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> rep = diagram.integrate_energy(method="cff")
+    >>> energy = next(iter(rep.on_shell_energies.values()))
+    >>> replacement = (energy.symbol, energy.to_expression())
+    """
+    @property
+    def edge_id(self) -> builtins.int:
+        r"""
+        Physical diagram edge owning this energy.
+
+        Examples
+        --------
+        >>> edge_id = energy.edge_id
+        """
+    @property
+    def symbol(self) -> Expression:
+        r"""
+        Canonical ``gammalooprs::OSE(edge_id)``, shared between CFF and LTD.
+
+        Examples
+        --------
+        >>> symbol = energy.symbol
+        """
+    def to_expression(self) -> TensorExpression:
+        r"""
+        Return the routed definition :math:`\sqrt{\boldsymbol{q}_e^2+m_e^2}`.
+
+        Examples
+        --------
+        >>> definition = energy.to_expression()
+
+        Returns
+        -------
+        TensorExpression
+            Positive square root in the diagram's spatial K/P basis coordinates.
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Display the symbolic energy and its definition.
+
+        Examples
+        --------
+        >>> print(energy)
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Render the energy symbol with its expandable routed square root.
+
+        Examples
+        --------
+        >>> html = energy._repr_html_()
         """
 
 @typing.final
@@ -8524,7 +9267,7 @@ class Process:
         >>> repr(process)
         'Process("sm": [e-, e+] -> [mu-, mu+])'
         """
-    def render(self, *, config: typing.Optional[RenderSettings] = None) -> DiagramRender:
+    def render(self, *, config: typing.Optional[RenderSettings] = None, style: typing.Optional[DiagramStyle] = None) -> DiagramRender:
         r"""
         Create a displayable blob with the process's physical incoming and outgoing particles.
         Alternative final states are displayed as separate schematics.
@@ -8539,6 +9282,8 @@ class Process:
 
         Parameters
         ----------
+        style : DiagramStyle or None, optional
+            Particle, momentum, and physical index presentation.
         config : RenderSettings or None, optional
             Particle-label, layout and drawing overrides shared with Feynman diagrams.
         """
@@ -8607,7 +9352,7 @@ class Process:
         vertex_veto : sequence[VertexRule | str] or None, optional
             Replace the excluded interaction rules.
         """
-    def generate_diagrams(self, *, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> GenerationResult:
+    def generate_diagrams(self, *, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.community.graph.Graph, int], bool] | None = None) -> GenerationResult:
         r"""
         Generate and optionally group all diagrams matching a process.
 
@@ -8703,7 +9448,7 @@ class Process:
             The display closes on completion, cancellation, or error.
             Observe stage changes and coalesced counts on the calling Python thread.
             Callback exceptions propagate and stop generation.
-        filter : Callable[[symbolica.core.Graph, int], bool] or None, optional
+        filter : Callable[[symbolica.community.graph.Graph, int], bool] or None, optional
             Prune partial topologies during enumeration. The first N vertices are
             complete. False rejects only this search branch. Edge data is the base
             particle PDG code; node data is 0 internally, -(index+1) for incoming
@@ -8715,7 +9460,7 @@ class Process:
             returns an incomplete result; Python signal-handler exceptions, including
             KeyboardInterrupt, stop generation and propagate to the caller.
         """
-    def generate_amplitude(self, *, dimension: typing.Optional[Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]] = None, real: typing.Optional[typing.Sequence[Expression]] = None, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> Amplitude:
+    def generate_amplitude(self, *, dimension: typing.Optional[Expression | int | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | ComplexFloat | Float | builtins.int | builtins.float | builtins.str | decimal.Decimal | builtins.complex | tuple[Float | builtins.int | builtins.float | builtins.str | decimal.Decimal, Float | builtins.int | builtins.float | builtins.str | decimal.Decimal]] = None, real: typing.Optional[typing.Sequence[Expression]] = None, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.community.graph.Graph, int], bool] | None = None) -> Amplitude:
         r"""
         Generate a coherent symbolic amplitude for this process.
         Cancelled or empty generation cannot produce an amplitude.
@@ -8816,7 +9561,7 @@ class Process:
             The display closes on completion, cancellation, or error.
             Observe stage changes and coalesced counts on the calling Python thread.
             Callback exceptions propagate and stop generation.
-        filter : Callable[[symbolica.core.Graph, int], bool] or None, optional
+        filter : Callable[[symbolica.community.graph.Graph, int], bool] or None, optional
             Prune partial topologies during enumeration. The first N vertices are
             complete. False rejects only this search branch. Edge data is the base
             particle PDG code; node data is 0 internally, -(index+1) for incoming
@@ -8828,7 +9573,7 @@ class Process:
             returns an incomplete result; Python signal-handler exceptions, including
             KeyboardInterrupt, stop generation and propagate to the caller.
         """
-    def generate_cross_section(self, *, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.core.Graph, int], bool] | None = None) -> GenerationResult:
+    def generate_cross_section(self, *, loops: builtins.int | tuple[builtins.int, builtins.int] = 0, symmetrize_initial: builtins.bool = False, symmetrize_final: typing.Optional[builtins.bool] = None, symmetrize_left_right: builtins.bool = False, symmetrize_external_fermions: builtins.bool = False, threads: typing.Optional[builtins.int] = None, max_vertices: typing.Optional[builtins.int] = None, allow_self_loops: builtins.bool = True, allow_zero_flow_edges: builtins.bool = False, graph_prefix: typing.Optional[builtins.str] = None, maximum_bridges: int | None | types.EllipsisType = ..., self_energy: SelfEnergyFilterOptions | types.EllipsisType | None = ..., tadpoles: TadpoleFilterOptions | types.EllipsisType | None = ..., zero_snails: SnailFilterOptions | types.EllipsisType | None = ..., coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, fermion_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, factorized_loop_topologies_count_range: tuple[int, int] | types.EllipsisType | None = ..., blob_range: tuple[int, int] | types.EllipsisType | None = ..., spectator_range: tuple[int, int] | types.EllipsisType | None = ..., perturbative_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int]] = None, sewn_tadpoles: typing.Optional[builtins.bool] = None, cut_amplitude_coupling_orders: typing.Optional[typing.Mapping[builtins.str, builtins.int | tuple[builtins.int, typing.Optional[builtins.int]]]] = None, cut_amplitude_loop_count_range: typing.Optional[tuple[builtins.int, builtins.int]] = None, select_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, veto_diagrams: typing.Optional[typing.Sequence[FeynmanDiagram | builtins.str]] = None, loop_momentum_bases: typing.Optional[typing.Sequence[tuple[FeynmanDiagram | builtins.str, typing.Sequence[builtins.int]]]] = None, numerator_prefactor: typing.Optional[Expression] = None, projector: typing.Optional[Expression] = None, numerator_grouping: typing.Optional[NumeratorGrouping] = None, filter_zero_color: builtins.bool = False, cancellation_token: typing.Optional[CancellationToken] = None, progress: typing.Literal['auto'] | collections.abc.Callable[[GenerationProgress], None] | None = 'auto', filter: collections.abc.Callable[[symbolica.community.graph.Graph, int], bool] | None = None) -> GenerationResult:
         r"""
         Generate sewn forward diagrams and their physical final-state cuts.
         The result contains diagrams and cut metadata, before phase-space integration.
@@ -8930,7 +9675,7 @@ class Process:
             The display closes on completion, cancellation, or error.
             Observe stage changes and coalesced counts on the calling Python thread.
             Callback exceptions propagate and stop generation.
-        filter : Callable[[symbolica.core.Graph, int], bool] or None, optional
+        filter : Callable[[symbolica.community.graph.Graph, int], bool] or None, optional
             Prune partial topologies during enumeration. The first N vertices are
             complete. False rejects only this search branch. Edge data is the base
             particle PDG code; node data is 0 internally, -(index+1) for incoming
@@ -9097,196 +9842,6 @@ class PropagatorMapping:
         ----------
         powers : list[int]
             One signed power per source denominator.
-        """
-
-@typing.final
-class RenderSettings:
-    r"""
-    Immutable presentation settings for diagrams, subgraphs, and process schematics.
-    None leaves an option to the renderer; it does not force a default override.
-    Constructors and read-only properties expose options to help() and completion.
-
-    Examples
-    --------
-    >>> from symbolica.community.hepkit import RenderSettings
-    >>> settings = RenderSettings(node_radius=5, show_particle=False)
-    """
-    @property
-    def title(self) -> typing.Optional[builtins.str]:
-        r"""
-        Plain-text title above the drawing.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().title
-        """
-    @property
-    def layout(self) -> typing.Optional[LayoutSettings]:
-        r"""
-        Native graph layout options; omitted values retain renderer defaults.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().layout
-        """
-    @property
-    def node_radius(self) -> typing.Optional[builtins.float]:
-        r"""
-        Finite nonnegative vertex radius in drawing units.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().node_radius
-        """
-    @property
-    def node_fill(self) -> typing.Optional[builtins.str]:
-        r"""
-        Vertex fill as a CSS color.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().node_fill
-        """
-    @property
-    def node_stroke(self) -> typing.Optional[StrokeStyle]:
-        r"""
-        Vertex outline paint, width, and dash pattern.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().node_stroke
-        """
-    @property
-    def edge_stroke(self) -> typing.Optional[StrokeStyle]:
-        r"""
-        Edge paint, width, and dash pattern.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().edge_stroke
-        """
-    @property
-    def show_particle(self) -> typing.Optional[builtins.bool]:
-        r"""
-        Show particle labels; enabled by default.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().show_particle
-        """
-    @property
-    def show_momentum(self) -> typing.Optional[builtins.bool]:
-        r"""
-        Show momentum labels; None follows momenta or the supplied momentum basis.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().show_momentum
-        """
-    @property
-    def show_edge_index(self) -> typing.Optional[builtins.bool]:
-        r"""
-        Show native edge IDs; disabled by default.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().show_edge_index
-        """
-    @property
-    def show_node_index(self) -> typing.Optional[builtins.bool]:
-        r"""
-        Show native vertex IDs; disabled by default.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().show_node_index
-        """
-    @property
-    def momentum_arrows(self) -> typing.Optional[builtins.bool]:
-        r"""
-        Draw momentum arrows; None follows momenta or the supplied momentum basis.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().momentum_arrows
-        """
-    @property
-    def split_initial_state(self) -> typing.Optional[builtins.bool]:
-        r"""
-        Open sewn initial-state connections in cross sections; enabled by default.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().split_initial_state
-        """
-    @property
-    def debug(self) -> typing.Optional[builtins.bool]:
-        r"""
-        Show both vertex and edge IDs; disabled by default.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> value = RenderSettings().debug
-        """
-    def __new__(cls, *, title: typing.Optional[builtins.str] = None, layout: typing.Optional[LayoutSettings] = None, node_radius: typing.Optional[builtins.float] = None, node_fill: typing.Optional[builtins.str] = None, node_stroke: typing.Optional[StrokeStyle] = None, edge_stroke: typing.Optional[StrokeStyle] = None, show_particle: typing.Optional[builtins.bool] = None, show_momentum: typing.Optional[builtins.bool] = None, show_edge_index: typing.Optional[builtins.bool] = None, show_node_index: typing.Optional[builtins.bool] = None, momentum_arrows: typing.Optional[builtins.bool] = None, split_initial_state: typing.Optional[builtins.bool] = None, debug: typing.Optional[builtins.bool] = None) -> RenderSettings:
-        r"""
-        Construct immutable overrides; None preserves the renderer's defaults.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> settings = RenderSettings(node_radius=5, show_particle=False)
-
-        Parameters
-        ----------
-        title : str or None, optional
-            Plain-text title above the drawing.
-        layout : LayoutSettings or None, optional
-            Native graph layout options; omitted values retain renderer defaults.
-        node_radius : float or None, optional
-            Finite nonnegative vertex radius in drawing units.
-        node_fill : str or None, optional
-            Vertex fill as a CSS color.
-        node_stroke : StrokeStyle or None, optional
-            Vertex outline paint, width, and dash pattern.
-        edge_stroke : StrokeStyle or None, optional
-            Edge paint, width, and dash pattern.
-        show_particle : bool or None, optional
-            Show particle labels; enabled by default.
-        show_momentum : bool or None, optional
-            Show momentum labels; None follows momenta or the supplied momentum basis.
-        show_edge_index : bool or None, optional
-            Show native edge IDs; disabled by default.
-        show_node_index : bool or None, optional
-            Show native vertex IDs; disabled by default.
-        momentum_arrows : bool or None, optional
-            Draw momentum arrows; None follows momenta or the supplied momentum basis.
-        split_initial_state : bool or None, optional
-            Open sewn initial-state connections in cross sections; enabled by default.
-        debug : bool or None, optional
-            Show both vertex and edge IDs; disabled by default.
-        """
-    def __repr__(self) -> builtins.str:
-        r"""
-        Inspect the selected overrides without rendering a diagram.
-
-        Examples
-        --------
-        >>> from symbolica.community.hepkit import RenderSettings
-        >>> text = repr(RenderSettings(node_radius=5, show_particle=False))
         """
 
 @typing.final
@@ -9820,6 +10375,163 @@ class Subgraph(FeynmanDiagram):
         Using the setup in the ``Subgraph`` class example:
 
         >>> outside = ~region
+        """
+
+@typing.final
+class SurfaceFactor:
+    r"""
+    A signed denominator factor referring to a stored energy surface.
+
+    For stored surface :math:`s`, occurrence sign :math:`\epsilon\in\{-1,+1\}`
+    and positive multiplicity :math:`p`, ``to_expression()`` returns
+    :math:`(\epsilon s)^p`. This is the denominator, before inversion.
+    ``sign`` relates the occurrence to the stored surface; it is not an LTD
+    cut-edge pole sign.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> rep = diagram.integrate_energy(method="cff")
+    >>> factor = rep.orientations[0].families[0].factors[0]
+    >>> denominator = factor.to_expression()
+    """
+    @property
+    def surface(self) -> EnergySurface:
+        r"""
+        Stored surface referenced by this factor.
+
+        Examples
+        --------
+        >>> value = factor.surface
+        """
+    @property
+    def sign(self) -> builtins.int:
+        r"""
+        Overall sign relative to the stored surface, +1 or -1.
+
+        Examples
+        --------
+        >>> value = factor.sign
+        """
+    @property
+    def power(self) -> builtins.int:
+        r"""
+        Positive multiplicity in this denominator product.
+
+        Examples
+        --------
+        >>> value = factor.power
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Show the signed denominator and its multiplicity.
+
+        Examples
+        --------
+        >>> text = repr(factor)
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Render this denominator before inversion, preserving its sign and power.
+
+        Examples
+        --------
+        >>> html = factor._repr_html_()
+        """
+    def to_expression(self, *, expand_surfaces: builtins.bool = True) -> TensorExpression:
+        r"""
+        Return the signed denominator factor, including its power.
+
+        Examples
+        --------
+        Using the setup in the class example:
+
+        >>> expression = factor.to_expression()
+
+        Parameters
+        ----------
+        expand_surfaces : bool, optional
+            Replace stored surface placeholders by affine energy definitions.
+            Defaults to True. On-shell energies remain symbolic in either case.
+
+        Returns
+        -------
+        TensorExpression
+            The denominator :math:`(\epsilon s)^p`, before inversion.
+        """
+
+@typing.final
+class SurfacePair:
+    r"""
+    The two linear factors of an uncut propagator at an LTD residue.
+
+    ``minus`` represents :math:`q_e^0-E_e` and ``plus`` represents
+    :math:`q_e^0+E_e`, with :math:`q_e^0` taken from ``residue.energy_map``.
+    Their product is :math:`(q_e^0)^2-E_e^2`. Each ``SurfaceFactor`` retains
+    its sign relative to the stored affine surface. Switching factors changes
+    only the coefficient of :math:`E_e`, not the cut-edge pole assignments.
+
+    Examples
+    --------
+    >>> from symbolica.community import hepkit as hep
+    >>> process = hep.Model.phi3().process(["phi"], ["phi", "phi"])
+    >>> diagrams = process.generate_diagrams(
+    ...     loops=1, max_vertices=3, maximum_bridges=0, progress=None
+    ... )
+    >>> diagram = diagrams.diagrams[0]
+    >>> ltd = diagram.integrate_energy(method="ltd")
+    >>> residue = ltd.residues[0]
+    >>> pair = next(iter(residue.surface_pairs.values()))
+    >>> denominator = pair.minus.to_expression() * pair.plus.to_expression()
+    """
+    @property
+    def minus(self) -> SurfaceFactor:
+        r"""
+        The :math:`q_e^0-E_e` denominator factor evaluated at this residue.
+
+        Examples
+        --------
+        >>> factor = pair.minus
+
+        Returns
+        -------
+        SurfaceFactor
+            The stored affine surface together with its occurrence sign.
+        """
+    @property
+    def plus(self) -> SurfaceFactor:
+        r"""
+        The :math:`q_e^0+E_e` denominator factor evaluated at this residue.
+
+        Examples
+        --------
+        >>> factor = pair.plus
+
+        Returns
+        -------
+        SurfaceFactor
+            The stored affine surface together with its occurrence sign.
+        """
+    def __repr__(self) -> builtins.str:
+        r"""
+        Identify both denominator factors for this tree edge.
+
+        Examples
+        --------
+        >>> text = repr(pair)
+        """
+    def _repr_html_(self) -> builtins.str:
+        r"""
+        Render the minus/plus factors evaluated at the owning residue.
+
+        Examples
+        --------
+        >>> html = pair._repr_html_()
         """
 
 @typing.final
@@ -11267,13 +11979,6 @@ class ParameterType(enum.Enum):
     REAL = ...
     COMPLEX = ...
 
-
-"""Native RustRed IBP solving in the host Symbolica kernel."""
-
-from typing import overload
-
-from symbolica import Expression
-
 class IBPFamily:
     r"""
     Find exact integration-by-parts (IBP) relations for a complete integral family.
@@ -11955,7 +12660,6 @@ class IBPSolution:
 
         >>> summary = repr(solution)
         """
-
 
 class IBPCertificate:
     """Evidence returned by IBPSolution.certify; no public constructor.
