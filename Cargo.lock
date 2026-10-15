@@ -4321,7 +4321,7 @@ dependencies = [
 [[package]]
 name = "rustred"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
 dependencies = [
  "bincode 2.0.1",
  "blake3",
@@ -4334,7 +4334,7 @@ dependencies = [
 [[package]]
 name = "rustred-app"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
 dependencies = [
  "bincode 2.0.1",
  "blake3",
@@ -4350,7 +4350,7 @@ dependencies = [
 [[package]]
 name = "rustred-feynkit"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
 dependencies = [
  "pyo3",
  "rustred",
@@ -4361,12 +4361,12 @@ dependencies = [
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
 
 [[package]]
 name = "rustred-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
+source = "git+https://github.com/alphal00p/rustred?branch=main#89eecd455399a660f8654bdd44c4a258d3cf7a0c"
 dependencies = [
  "pyo3",
  "rustred-app",
@@ -5100,9 +5100,9 @@ dependencies = [
 
 [[package]]
 name = "symjit"
-version = "2.27.2"
+version = "2.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e615ee31771ded588aaecf42d0217b711e0aa3f582fdd293e124d918bd45660"
+checksum = "9d5297d2ef25e396f984747fd0e480aaabb08e40e424f9cd07811efc6b20c140"
 dependencies = [
  "ahash 0.8.12",
  "anyhow",
