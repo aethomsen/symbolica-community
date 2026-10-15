@@ -8,7 +8,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
-from symbolica.community import graph as render
+from symbolica.community import graph
 from symbolica.community import hepkit as hep
 from symbolica.community import tensor as spenso
 from symbolica.core import S
@@ -44,20 +44,10 @@ try:
         (["g", "g"], ["g", "g", "g"], None),
         (["u"] * 4, [], None),
         ([], ["u"] * 4, None),
-        (
-            ["u", "u~"],
-            ["u", "u~"],
-            render.RenderSettings(drawing=render.DrawOptions(node_radius=5)),
-        ),
-        (
-            ["u", "u~"],
-            ["u", "u~"],
-            render.RenderSettings(drawing=render.DrawOptions(node_radius=6)),
-        ),
+        (["u", "u~"], ["u", "u~"], graph.RenderSettings(drawing=graph.DrawOptions(node_radius=5))),
+        (["u", "u~"], ["u", "u~"], graph.RenderSettings(drawing=graph.DrawOptions(node_radius=6))),
     ):
-        drawing = ET.fromstring(
-            model.process(incoming, outgoing).render(config=config).to_svg()
-        )
+        drawing = ET.fromstring(model.process(incoming, outgoing).render(config=config).to_svg())
         blob = drawing.find(ns + "circle")
         cx, cy, radius = (float(blob.attrib[k]) for k in ("cx", "cy", "r"))
         assert radius >= 45, radius
@@ -96,7 +86,7 @@ try:
     ET.fromstring(diagram.render().to_svg())
     ET.fromstring(
         diagram.render(
-            config=render.RenderSettings(layouts=render.LayoutSettings(impred_steps=2)),
+            config=graph.RenderSettings(layouts=graph.LayoutSettings(impred_steps=2)),
             style=hep.DiagramStyle(show_particle=False),
         ).to_svg()
     )
@@ -107,9 +97,7 @@ try:
     # The remaining graph types also render without Typst graph plugins.
     ET.fromstring(process.render(style=hep.DiagramStyle(show_particle=False)).to_svg())
     network = spenso.TensorNetwork(spenso.TensorExpression(S("direct_svg_test::x") + 2))
-    ET.fromstring(
-        network.render(config=render.RenderSettings(title="Native network")).to_svg()
-    )
+    ET.fromstring(network.render(config=graph.RenderSettings(title="Native network")).to_svg())
     assert "#image(bytes(" in network.to_linnest()
     scalar = hep.Model.phi3()
     cross = scalar.process(["phi"], ["phi", "phi"]).generate_cross_section(
@@ -154,9 +142,7 @@ try:
     ET.fromstring(spenso.TensorExpression(parameter).to_svg())
     # Every authored Standard Model label must compile without package access.
     standard = hep.Model.standard_model()
-    ET.fromstring(
-        standard.process([p.name for p in standard.particles], []).render().to_svg()
-    )
+    ET.fromstring(standard.process([p.name for p in standard.particles], []).render().to_svg())
     all_parameters = sum(p.symbol for p in standard.parameters)
     ET.fromstring(spenso.TensorExpression(all_parameters).to_svg())
     assert not hasattr(sys.modules["symbolica.community"], "linnet")

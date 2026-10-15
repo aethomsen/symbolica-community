@@ -285,8 +285,11 @@ Linux x86-64 builds also emit address-significance tables and enable LLD's safe
 identical-code folding to share eligible copies of generic functions. WASM keeps
 its separate build settings.
 
-Fonts and Vakint resources are supplied by separate data wheels; see
-`data-loading.typ`. PyPI builds use
+Fonts and Vakint resources are supplied by separate data wheels, installed in
+disjoint `symbolica/_data/fonts/` and `symbolica/_data/vakint-data/` directories.
+Import discovers them automatically; no user path is required. Missing resources
+report the package and pip command needed to install them. See `data-loading.typ`.
+PyPI builds use
 Deflate level 9 and check that every uploaded distribution is smaller than
 100,000,000 bytes. Check local artifacts with
 `python scripts/check_distribution_size.py dist/*.whl dist/*.tar.gz`.

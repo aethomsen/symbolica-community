@@ -60,6 +60,10 @@ export async function loadPyodide() {
     wheel_dir.mkdir()
     wheel_name = "symbolica-3.0.1-cp314-abi3-pyemscripten_2026_0_wasm32.whl"
     (wheel_dir / wheel_name).write_bytes(b"synthetic archive, never installed")
+    for distribution in ("symbolica_fonts", "symbolica_vakint_data"):
+        (wheel_dir / f"{distribution}-3.0.1-py3-none-any.whl").write_bytes(
+            b"synthetic resource archive, never installed"
+        )
     native_artifact = tmp_path / "native.rr"
     native_artifact.write_bytes(b"synthetic native artifact")
     expected = tmp_path / "expected.json"
@@ -79,6 +83,7 @@ export async function loadPyodide() {
         command.append("--rustred-only")
     result = subprocess.run(command, env=env, capture_output=True, text=True, timeout=15)
     calls = [json.loads(line) for line in (runtime / "calls.jsonl").read_text().splitlines()]
+    assert any("await micropip.install(list(resource_wheel_uris))" in source for source in calls)
     assert any('assert E("(x+1)^2")' in source for source in calls)
     assert any("alignment_reducers" in source and "alignment_members" in source for source in calls)
     assert (ROOT / "tests/check_offline_rendering.py").read_text() in calls

@@ -102,7 +102,7 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(citations::get_citations, m)?)?;
     #[cfg(feature = "community")]
     {
-        register_module!(m, linnet_py::GraphModule);
+        register_module!(m, linnet_render_py::GraphModule);
         register_module!(m, spynso3::SpensoModule);
         register_module!(m, hepkit::HepKitModule);
         #[cfg(not(target_arch = "wasm32"))]
@@ -131,6 +131,7 @@ fn integration_citations() -> Vec<Citation> {
     vec![
         Citation {
             id: "https://github.com/symbolica-dev/symbolica-integrate".into(),
+            url: "https://github.com/symbolica-dev/symbolica-integrate".into(),
             reference: "Ben Ruijl. Symbolica-integrate (2026).".into(),
             bibtex: r#"@software{symbolica_integrate,
   author = {Ruijl, Ben},
@@ -145,6 +146,7 @@ fn integration_citations() -> Vec<Citation> {
         },
         Citation {
             id: "https://rulebasedintegration.org".into(),
+            url: "https://rulebasedintegration.org".into(),
             reference: "Albert D. Rich, Patrick Scheibe and contributors. Rubi.".into(),
             bibtex: r#"@software{rubi,
   author = {Rich, Albert D. and Scheibe, Patrick and {Rubi contributors}},

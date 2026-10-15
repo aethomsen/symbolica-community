@@ -3,7 +3,11 @@
 
 import builtins
 import typing
-from symbolica.core import Expression
+from symbolica.core import Expression, FormattedOutput
+from symbolica.community.hepkit import FeynmanDiagram, IntegralFamily
+
+def integral_from_diagram(diagram: FeynmanDiagram, family: IntegralFamily, numerator: Expression, *, powers: typing.Optional[typing.Sequence[int]] = None, parameter_substitutions: typing.Optional[typing.Mapping[Expression, Expression]] = None, external_momenta: typing.Sequence[Expression] = ()) -> VakintExpression:
+    """Checked scalar-vacuum ingress from the graph's stored routing; no text parsing."""
 
 @typing.final
 class Vakint:
@@ -433,7 +437,7 @@ class VakintExpression:
         r"""
         Display through Symbolica's native rich expression printer.
         """
-    def formatted(self, **options: typing.Any) -> typing.Any:
+    def formatted(self, **options: typing.Any) -> FormattedOutput:
         r"""
         Return Symbolica's `FormattedOutput`; keyword options are forwarded unchanged.
         """
@@ -507,7 +511,7 @@ class VakintNumericalResult:
         r"""
         Display through Symbolica's native rich expression printer.
         """
-    def formatted(self, **options: typing.Any) -> typing.Any:
+    def formatted(self, **options: typing.Any) -> FormattedOutput:
         r"""
         Return Symbolica's `FormattedOutput`; keyword options are forwarded unchanged.
         """

@@ -90,7 +90,7 @@ def _(E, Replacement, S, hep, oneloop, tensor):
         denominators = (
             diagram.denominator_expression(dimension=dimension, in_lmb=True)
             .to_expression()
-            .replace(hep.Symbols.denominator(edge, momentum, mass2, inverse), inverse)
+            .replace(hep.Symbols.denominator()(edge, momentum, mass2, inverse), inverse)
         )
         numerator = (amplitude.expression().to_expression() * denominators).together()
         numerator = numerator.replace(
@@ -150,7 +150,7 @@ def _(E, Replacement, S, hep, oneloop, tensor):
 
 
 @app.cell(hide_code=True)
-def _(E, Replacement, Symbol, math, np):
+def _(E, Replacement, S, Symbol, np):
     def cff_triangle_density(cff, diagram, radius, cosine, higgs_mass, loop_mass):
         """Route generated CFF surfaces; return the OneLOop C0 density in d^3 k."""
         # Rest frame: P0=(M,0,0,0), P1=(M/2,0,0,M/2), P2=P0-P1.
@@ -175,23 +175,18 @@ def _(E, Replacement, Symbol, math, np):
                 + longitudinal**2
                 + loop_mass**2
             ).sqrt()
-        substitutions = []
-        for surface in cff.surfaces:
-            assert surface.kind in ("energy", "h")
-            value = (
-                sum((energies[i] for i in surface.positive_energies), E("0"))
-                - sum((energies[i] for i in surface.negative_energies), E("0"))
-                + sum((c * shifts[i] for i, c in surface.external_shift), E("0"))
-            )
-            substitutions.append(Replacement(E(surface.symbol_name), value))
-        energy_product = math.prod(energies[e.id] for e in diagram.internal_edges)
-        # Bare CFF denominators use positive energy sums. For three propagators,
-        # the physical dk0/(2*pi) contour and spatial (2*pi)^-3 measure, divided
-        # by i/(16*pi^2), give -1/(4*pi*E1*E2*E3). The vacuum check below fixes
-        # this normalization independently of the Higgs amplitude.
-        return -cff.to_expression().replace_multiple(substitutions) / (
-            4 * Symbol.PI * energy_product
-        )
+        momentum, cind = S("gammalooprs::Q", "spenso::cind")
+        substitutions = [
+            Replacement(energy.symbol, energies[edge])
+            for edge, energy in cff.on_shell_energies.items()
+        ] + [
+            Replacement(momentum(edge.id, cind(0)), shifts[edge.id])
+            for edge in diagram.external_edges
+        ]
+        # integrate_energy includes the dq0/(2*pi*i) contour and on-shell
+        # factors. Multiplying its spatial density by 2/pi gives OneLOop C0;
+        # the independent vacuum normalization check below fixes this factor.
+        return 2 * cff.to_expression().to_expression().replace_multiple(substitutions) / Symbol.PI
 
     def batch_integrand(evaluator):
         """Adapt the Symbolica integrator's samples to its native batch evaluator."""
@@ -326,7 +321,7 @@ def _(E, S, generated, hep, model, prepared_numerator, tensor, top):
     mu, nu = S("mu", "nu")
     m = top.mass
     e = model.parameter("ee").symbol
-    K, P = hep.Kinematics.loop_momentum, hep.Kinematics.external_momentum
+    K, P = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     lorentz = tensor.Representation.mink(D)
     kinematics = (
         hep.Kinematics(D, momenta=[K(0), P(0), P(1)])
@@ -1282,7 +1277,7 @@ def _(mo):
     mo.md(r"""
     ## Generate the causal momentum-space representation
 
-    `build_cff()` performs the graph's loop-energy integration as a
+    `integrate_energy(method="cff")` performs the graph's loop-energy integration as a
     [Cross-Free Family representation](https://arxiv.org/abs/2211.09653). This is the causal organization of the loop-tree-dual
     residues: spurious differences of on-shell energies have already canceled.
     Only spatial momentum remains to integrate.
@@ -1299,7 +1294,7 @@ def _(mo):
 
 @app.cell
 def _(E, M, S, cff_triangle_density, generated, m):
-    cff_results = [diagram.build_cff() for diagram in generated.diagrams]
+    cff_results = [diagram.integrate_energy(method="cff") for diagram in generated.diagrams]
     r, z = S("r", "z")
     triangle_density = (
         sum(
@@ -1317,21 +1312,21 @@ def _(E, M, S, cff_triangle_density, generated, m):
 @app.cell(hide_code=True)
 def _(E, Replacement, cff_results, equation, mo, paper_symbol):
     _surface_notation = [
-        Replacement(E(surface.symbol_name), paper_symbol(f"eta_{i}"))
+        Replacement(surface.symbol, paper_symbol(f"eta_{i}"))
         for i, surface in enumerate(cff_results[0].surfaces)
     ]
     _surface_equations = [
         equation(
             f"eta_{i}",
-            sum((paper_symbol(f"E_{j}") for j in surface.positive_energies), E("0"))
-            - sum((paper_symbol(f"E_{j}") for j in surface.negative_energies), E("0"))
+            sum((coefficient * paper_symbol(f"E_{j}")
+                 for j, coefficient in surface.energy_coefficients.items()), surface.constant)
             + sum(
                 (
                     coefficient
                     * paper_symbol(
                         f"shift_{j}", latex=rf"q_{{{j}}}^0", typst=f"q_{j}^0"
                     )
-                    for j, coefficient in surface.external_shift
+                    for j, coefficient in surface.external_shift.items()
                 ),
                 E("0"),
             ),
@@ -1341,7 +1336,7 @@ def _(E, Replacement, cff_results, equation, mo, paper_symbol):
     mo.vstack(
         [
             equation(
-                "C", cff_results[0].to_expression().replace_multiple(_surface_notation)
+                "C", cff_results[0].to_expression(expand_surfaces=False).to_expression().replace_multiple(_surface_notation)
             ),
             mo.accordion(
                 {

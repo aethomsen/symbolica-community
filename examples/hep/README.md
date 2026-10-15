@@ -12,13 +12,14 @@ from symbolica.community.hepkit import FeynmanDiagram, Model, TensorReducer
 | --- | --- |
 | `feynkit-graph` | `FeynmanDiagram`, `DiagramEdge`, `DiagramVertex`, `LoopMomentumBasis` |
 | `feynkit-generator` | `Process`, `GenerationResult`, `GenerationProgress` |
-| `feynkit-cff` | `CffGenerator`, `CffResult`, `CffSurface`, `CffOrientation` |
+| `feynkit-cff` | `CffRepresentation`, `EnergySurface`, `CffOrientation`, `CrossFreeFamily` |
 | `feynkit-tensor` | `TensorReducer`; reduction methods also live on `FeynmanDiagram` |
 | `feynkit-py` | All of the above, plus models, UFO loading, kinematics, and jet clustering |
 | `hepkit.sector_decomposition` | Native `Integral`, `GeneratedIntegral`, `Kernels`, and caller-stepped `QmcSession` |
 
-Existing HEPKit class identities and the exception hierarchy are preserved;
-their Python `__module__` and bundled stubs name `symbolica.community.hepkit`.
+HEPKit classes and the exception hierarchy use `symbolica.community.hepkit`
+in their Python `__module__` and bundled stubs. Shared graph drawing and style
+types live in `symbolica.community.graph`.
 FastSecDec wrappers use `symbolica.community.hepkit.sector_decomposition`.
 
 [DOT editor](dot_editor.py) parses editable DOT text and previews the resulting
@@ -33,6 +34,14 @@ Lorentz-dimension conversion, two-gluon projection, simple contractions,
 minimal simplification, full dot-product reduction, and expanded term count.
 Invalid input appears inline; the notebook works in native
 Python and browser/WASM.
+
+[Numerical CFF/LTD](numerical_cff_ltd.py) derives both energy representations
+from the same scalar triangle, checks their exact equality, compares numerical
+stability and four spatial integration strategies against OneLOop, and provides
+interactive two- and three-loop graph explorers. It requires NumPy and Matplotlib.
+Use `diagram.integrate_energy(method="cff")` or `method="ltd"`; rendering settings
+come from `symbolica.community.graph`, with particle presentation controlled by
+`hepkit.DiagramStyle`.
 
 FastSecDec notebooks are available here:
 

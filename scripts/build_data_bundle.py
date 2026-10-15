@@ -139,23 +139,20 @@ def write_bundle(payloads, records, output, version, distribution, bundle):
 
     module = distribution.replace("-", "_")
     info = f"{module}-{version}.dist-info"
-    files = {f"{module}/data/{name}": content for name, content in payloads.items()}
-    files[f"{module}/data/manifest.json"] = manifest_bytes
-    files[
-        f"{module}/__init__.py"
-    ] = b'''"""Versioned external resources for Symbolica native and WASM hosts."""
-from pathlib import Path
-
-def directory():
-    return Path(__file__).parent / "data"
-'''
+    # Each distribution owns a separate subtree. In particular, resource wheels
+    # must never replace the engine's symbolica/__init__.py or share a manifest.
+    package_data = f"symbolica/_data/{bundle}"
+    files = {f"{package_data}/{name}": content for name, content in payloads.items()}
+    files[f"{package_data}/manifest.json"] = manifest_bytes
     files[f"{info}/METADATA"] = (
         f"Metadata-Version: 2.3\nName: {distribution}\nVersion: {version}\n"
         f"Summary: External {bundle} resources for Symbolica\n"
         "Requires-Python: >=3.9\nLicense: See bundled third-party notices\n\n"
     ).encode()
     files[f"{info}/WHEEL"] = (
-        b"Wheel-Version: 1.0\nGenerator: symbolica-community data bundler\nRoot-Is-Purelib: true\nTag: py3-none-any\n"
+        # Place portable data beside the native package even when Python's
+        # purelib and platlib directories differ.
+        b"Wheel-Version: 1.0\nGenerator: symbolica-community data bundler\nRoot-Is-Purelib: false\nTag: py3-none-any\n"
     )
     for license_path in [ROOT / "LICENSE", *sorted((ROOT / "licenses").glob("*"))]:
         if license_path.is_file():

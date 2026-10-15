@@ -28,7 +28,7 @@ crate-type = ["rlib", "cdylib"]
 [profile.dev.package.symbolica]
 opt-level = 2
 
-# Keep computation speed as the native release default; share code with ThinLTO.
+# Optimize across crates in native release builds with ThinLTO.
 [profile.release]
 lto = "thin"
 opt-level = 3
@@ -60,25 +60,24 @@ ibp-runtime-arity-selection = ["rustred-feynkit?/runtime-arity-selection", "symb
 default = ["module", "native", "community"]
 module = ["pyo3/abi3-py39"] # incompatible with stub_gen
 community = [
-    "dep:linnet-py",
     "ibp-capacity-dispatch",
-    "dep:spynso3", "dep:feynkit-py", "dep:one-loop-reduce-python",
+    "dep:spynso3", "dep:linnet-render-py", "dep:feynkit-py", "dep:one-loop-reduce-python",
     "dep:rustred-feynkit", "dep:oneloop-python", "dep:oneloop", "dep:vakint",
     "dep:hyperbolica", "dep:symbolica-amflow", "dep:fastsecdec-python",
 ]
 # Keep the system allocator: mimalloc can crash after Python's importing thread exits.
-native = ["linnet-py?/native", "hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "feynkit-py?/native", "rustred-feynkit?/native", "symbolica-amflow?/python", "fastsecdec-python?/native"]
+native = ["hyperbolica?/native", "symbolica/tracing_max_level_info", "symbolica/integer-gmp", "symbolica/float-mpfr", "symbolica/native_code_generation", "spynso3?/native", "linnet-render-py?/native", "feynkit-py?/native", "rustred-feynkit?/native", "symbolica-amflow?/python", "fastsecdec-python?/native"]
 # Use --no-default-features --features wasm-core for the kernel + integration only.
 wasm-core = ["symbolica/wasm"]
-wasm = ["wasm-core", "community", "linnet-py/wasm", "hyperbolica/wasm", "spynso3/wasm", "feynkit-py/wasm", "rustred-feynkit/wasm", "one-loop-reduce-python/wasm", "symbolica-amflow/python_wasm", "fastsecdec-python?/portable"]
+wasm = ["wasm-core", "community", "hyperbolica/wasm", "spynso3/wasm", "linnet-render-py/wasm", "feynkit-py/wasm", "rustred-feynkit/wasm", "one-loop-reduce-python/wasm", "symbolica-amflow/python_wasm", "fastsecdec-python?/portable"]
 python_stubgen = [
-    "linnet-py/python_stubgen",
     "hyperbolica/python_stubgen",
     "native",
     "community",
     "pyo3-stub-gen",
     "symbolica/python_stubgen",
     "spynso3/python_stubgen",
+    "linnet-render-py/python_stubgen",
     "feynkit-py/python_stubgen",
     "vakint/python_stubgen",
     "one-loop-reduce-python/python_stubgen",
@@ -87,20 +86,20 @@ python_stubgen = [
 ]
 
 [dependencies]
-linnet-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 symbolica-data = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 serde_json = "1"
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "dea66bfd116356092d3a68f19fdb77d2a6f55b25", default-features = false }
-hyperbolica = { optional = true, git = "https://github.com/benruijl/hyperbolica", rev = "31292085504b794dc444a006eba1d3013ed30944", default-features = false, features = ["python"] }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "4572d7a1d2e26e11b7ec213eda998efb7a5e8caa", default-features = false }
+hyperbolica = { optional = true, git = "https://github.com/lcnbr/hyperbolica", rev = "2e6fe4ef9c715d70f937aca53211793727f819b9", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
+linnet-render-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 # Aggregates the cff, generator, graph, tensor, model, and kinematics bindings.
 feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false, features = ["ufo"] }
 # Embed the IBP bridge in both hosts so it shares their Symbolica atoms.
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main", default-features = false, features = ["campaign-api"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "995e531c71df4b9c4b1c32fef8df8e7e8d201e12", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "ff39c89683bdf0ad7bac653ef549802a37ffa4a3", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
@@ -113,7 +112,7 @@ oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopm
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
 # RustRed-enabled Vakint is independently pinned; its assets use the host loader.
-vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "ffd9a52e7e691c6e32bbb34f733422bc78152dd6", features = ["symbolica_community_module"] }
+vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "4b2324b900c3703bfec11297c8d73e3f00c25c5c", features = ["symbolica_community_module"] }
 
 # All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]
@@ -121,7 +120,7 @@ vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev 
 typst-library = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 typst-svg = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 # Native evaluator composition for numerical-dual sector generation (Symbolica PR #54).
-symbolica = { git = "https://github.com/ValentinHirschi/symbolica", rev = "1deccb8538ccb91dc2c1e58fc0a2e900d2276bf4" }
+symbolica = { git = "https://github.com/ValentinHirschi/symbolica", branch = "codex/evaluator-composition" }
 # Preserve the official negative-integer serialization fix and shared numeric types.
 numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
 graphica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }

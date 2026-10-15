@@ -17,7 +17,7 @@ const inventoryConstructors = [
   // multiple-pymethods registers Python method blocks through inventory.
   // Only accept constructor globals from the known binding namespaces.
   // Rust v0 inserts an extra separator before `_rustred`'s leading underscore.
-  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|15rustred_feynkit|8__?rustred|17fastsecdec_python|7spynso3|9linnet_py|20oneloopreduce_python|16symbolica_amflow6python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
+  /^_RNvNv(?:Nt)*Cs[0-9A-Za-z]+_(?:10feynkit_py|15rustred_feynkit|8__?rustred|17fastsecdec_python|7spynso3|16linnet_render_py|20oneloopreduce_python|16symbolica_amflow6python|8numerica7domains5float6python|9symbolica3api6python)[0-9A-Za-z_]*1__6___CTOR$/,
 ];
 
 export function assertWasmExports(exports) {

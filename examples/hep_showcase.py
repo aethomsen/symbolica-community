@@ -91,7 +91,7 @@ def _(D, FeynmanDiagram, TensorExpression, adjoint):
         """Average external color, retaining the complete Lorentz/Dirac numerator."""
         numerator = diagram.numerator_expression(in_lmb=True).with_lorentz_dimension(D)
         a, b = [
-            slot for slot in numerator.structure.slots if slot.representation == adjoint
+            slot for slot in numerator.structure.slots() if slot.representation == adjoint
         ]
         projector = TensorExpression.g(adjoint)(a, b) / adjoint.dimension
         projected = numerator * projector
@@ -115,7 +115,7 @@ def _(D, P, TensorExpression, contraction_settings, lorentz, p2, sp):
         if numerator == 0:
             return numerator
         mu, nu = [
-            slot for slot in numerator.structure.slots if slot.representation == lorentz
+            slot for slot in numerator.structure.slots() if slot.representation == lorentz
         ]
         momentum_pair = P(mu).outer(P(nu)) / p2
         if longitudinal:
@@ -350,7 +350,7 @@ def _(Representation, S, Symbols, TensorName, dot, sp):
     K = loop_momenta[0]
     p, k = P(lorentz).to_expression(), K(lorentz).to_expression()
     index_ = S("index_")
-    MOMENTUM = TensorName(Symbols.edge_momentum.get_name())
+    MOMENTUM = TensorName(Symbols.edge_momentum().get_name())
     t = S("t", is_scalar=True)  # a scale that can move out of dot products
     mUV = S("mUV", is_scalar=True)
     uv_probe = S("uv_probe", is_scalar=True)
@@ -705,7 +705,7 @@ def _(mo):
     mo.md("""
     ## Build the energy denominators
 
-    `build_cff()` constructs the Cross-Free Family representation of this
+    `integrate_energy(method="cff")` constructs the Cross-Free Family representation of this
     diagram. Its output is a normal Symbolica expression. This step constructs
     the denominators; it does not evaluate the loop integral.
     """)
@@ -714,7 +714,7 @@ def _(mo):
 
 @app.cell
 def _(diagram):
-    cff = diagram.build_cff().to_expression()
+    cff = diagram.integrate_energy(method="cff").to_expression()
     cff
     return
 

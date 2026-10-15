@@ -13,7 +13,7 @@ import pytest
     [
         (
             "symbolica.community.graph",
-            {"DiagramRender", "LayoutSettings", "StrokeStyle"},
+            {"DiagramRender", "LayoutSettings", "Stroke", "RenderSettings"},
         ),
         (
             "symbolica.community.hep.integration",
@@ -36,8 +36,14 @@ import pytest
         ("symbolica.community.hepkit.oneloop", {"Reduction", "MasterIntegral"}),
         (
             "symbolica.community.hepkit.sector_decomposition",
-            {"Integral", "GeneratedIntegral", "GenerationSession", "Kernels",
-             "CompilationSettings", "FormulaPreparationSnapshot"},
+            {
+                "Integral",
+                "GeneratedIntegral",
+                "GenerationSession",
+                "Kernels",
+                "CompilationSettings",
+                "FormulaPreparationSnapshot",
+            },
         ),
         (
             "symbolica.community.hepkit.vakint",
@@ -109,20 +115,49 @@ def test_tensor_evaluator_stub_matches_loaded_signature():
     assert declared == list(inspect.signature(tensor.Tensor.evaluator).parameters)
 
 
+def test_graph_package_is_display_only():
+    from symbolica.community import graph
+
+    generic_api = {
+        "Graph",
+        "Node",
+        "Edge",
+        "HalfEdge",
+        "Subgraph",
+        "Cycle",
+        "OrientedCut",
+        "TraversalTree",
+        "DotCodec",
+        "LayoutStream",
+        "build",
+        "node",
+        "edge",
+        "source",
+        "sink",
+    }
+    assert not generic_api.intersection(vars(graph))
+    declarations = ast.parse(Path(graph.__file__).with_suffix(".pyi").read_text())
+    stub_exports = {
+        node.name
+        for node in declarations.body
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef))
+    }
+    assert not generic_api.intersection(stub_exports)
+
+
 def test_graph_presentation_types_are_shared_by_both_renderers():
     from symbolica import E
     from symbolica.community import graph, hepkit, tensor
 
-    for name in ("DiagramRender", "LayoutSettings", "StrokeStyle"):
-        assert getattr(hepkit, name) is getattr(tensor, name) is getattr(graph, name)
+    for name in ("DiagramRender", "LayoutSettings", "Stroke", "RenderSettings"):
+        assert getattr(graph, name).__module__ == "symbolica.community.graph"
 
     layout = graph.LayoutSettings(impred_steps=1)
-    stroke = graph.StrokeStyle(thickness=1)
-    tensor_settings = tensor.RenderSettings(layout=layout, edge_stroke=stroke)
-    hep_settings = hepkit.RenderSettings(layout=layout, edge_stroke=stroke)
-    assert isinstance(tensor_settings.layout, graph.LayoutSettings)
-    assert isinstance(hep_settings.layout, graph.LayoutSettings)
-    drawing = tensor.TensorNetwork(E("1")).render(config=tensor_settings)
+    stroke = graph.Stroke(thickness=1)
+    settings = graph.RenderSettings(
+        layouts=layout, drawing=graph.DrawOptions(edge_stroke=stroke)
+    )
+    drawing = tensor.TensorNetwork(E("1")).render(config=settings)
     assert isinstance(drawing, graph.DiagramRender)
     diagram = (
         hepkit.Model.phi4()
@@ -130,7 +165,7 @@ def test_graph_presentation_types_are_shared_by_both_renderers():
         .generate_diagrams(progress=None)
         .diagrams[0]
     )
-    assert isinstance(diagram.render(config=hep_settings), graph.DiagramRender)
+    assert isinstance(diagram.render(config=settings), graph.DiagramRender)
 
 
 def test_ibp_campaign_api_survives_stub_regeneration():

@@ -167,10 +167,10 @@ def _(
     def route_numerator(diagram: FeynmanDiagram) -> TensorExpression:
         expression = numerator_in_d(diagram).to_expression()
         expression = expression.replace(
-            hep.Kinematics.loop_momentum(0, index_), K(index_)
+            hep.Kinematics.loop_momentum()(0, index_), K(index_)
         )
         expression = expression.replace(
-            hep.Kinematics.external_momentum(0, index_), P(index_)
+            hep.Kinematics.external_momentum()(0, index_), P(index_)
         )
         return as_tensor(expression)
 
@@ -358,7 +358,7 @@ def _(S, hep, sp):
     )
     x = S("hep_gluon::x", is_scalar=True)
     P, K = S(
-        "hep_gluon::P", "hep_gluon::K", tags=hep.Kinematics.external_momentum.get_tags()
+        "hep_gluon::P", "hep_gluon::K", tags=hep.Kinematics.external_momentum().get_tags()
     )
     L = sp.TensorName.vector("hep_gluon::L").to_expression()
     RED_P = sp.TensorName.vector("hep_gluon::reduction_P").to_expression()
@@ -544,7 +544,7 @@ def _(mo):
     mo.md("""
     ## Build the energy denominators
 
-    `build_cff()` constructs the Cross-Free Family representation of this
+    `integrate_energy(method="cff")` constructs the Cross-Free Family representation of this
     diagram. Its output is a normal Symbolica expression. This step constructs
     the denominators; it does not evaluate the loop integral.
     """)
@@ -553,7 +553,7 @@ def _(mo):
 
 @app.cell
 def _(diagram):
-    cff = diagram.build_cff().to_expression()
+    cff = diagram.integrate_energy(method="cff").to_expression()
     cff
     return
 

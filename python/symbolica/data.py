@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import importlib
-import importlib.util
 import json
 import os
 import sys
@@ -39,11 +37,11 @@ def configure() -> None:
     if directory := os.environ.get("SYMBOLICA_DATA_DIRECTORY"):
         set_directories(*directory.split(os.pathsep))
     else:
+        package_data = Path(__file__).parent / "_data"
         set_directories(
             *(
-                importlib.import_module(module).directory()
-                for module in ("symbolica_fonts", "symbolica_vakint_data")
-                if importlib.util.find_spec(module) is not None
+                package_data / bundle
+                for bundle in ("fonts", "vakint-data")
             )
         )
 
@@ -138,8 +136,13 @@ async def prepare(
                 (root / name for root in roots if (root / name).is_file()), None
             )
             if path is None:
+                package = (
+                    "symbolica-fonts" if name.startswith("render/fonts/")
+                    else "symbolica-vakint-data" if name.startswith("vakint/")
+                    else "the resource wheel"
+                )
                 raise FileNotFoundError(
-                    f"Install the resource wheel or supply a source for {name}"
+                    f"Install {package} with `python -m pip install {package}` or supply a source for {name}"
                 )
             with path.open("rb") as stream:
                 payload = stream.read(record["size"] + 1)

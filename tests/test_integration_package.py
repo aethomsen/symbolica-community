@@ -54,9 +54,9 @@ def test_wasm_graph_retains_host_build_dependencies_and_filters_inactive_names(m
 
 
 def browser_graph():
-    algebra = "git+https://github.com/symbolica-dev/symbolica?branch=community#" + "a" * 40
-    hepkit = "git+https://github.com/ValentinHirschi/gammaloop?rev=" + "b" * 40
-    packages = [package(name, algebra) for name in CHECK.ALGEBRA]
+    algebra = CHECK.algebra_sources()
+    hepkit = "git+https://github.com/alphal00p/gammaloop?branch=feynkit"
+    packages = [package(name, algebra[name] + "#" + "a" * 40) for name in CHECK.ALGEBRA]
     packages += [package(name, hepkit + "#" + "b" * 40) for name in CHECK.HEPKIT]
     rustred = "git+https://github.com/alphal00p/rustred?branch=main"
     packages += [package(name, rustred + "#" + "c" * 40) for name in CHECK.RUSTRED]
@@ -71,6 +71,22 @@ def browser_graph():
         {"name": "rustred-feynkit", "source": rustred},
     ]}
     return packages, nodes, root
+
+
+@pytest.mark.parametrize("name", CHECK.ALGEBRA)
+def test_algebra_rejects_sources_outside_the_host_declaration(name):
+    packages, nodes, root = browser_graph()
+    next(p for p in packages if p["name"] == name)["source"] = "git+foreign#" + "a" * 40
+    with pytest.raises(AssertionError, match="algebra source differs"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
+
+
+def test_numeric_owners_still_require_one_revision():
+    packages, nodes, root = browser_graph()
+    graphica = next(p for p in packages if p["name"] == "graphica")
+    graphica["source"] = CHECK.algebra_sources()["graphica"] + "#" + "d" * 40
+    with pytest.raises(AssertionError, match="numeric revisions differ"):
+        CHECK.check_graph("pyodide", packages, nodes, root, community=True, native=False)
 
 
 def test_browser_requires_automatic_evaluation_and_transport():

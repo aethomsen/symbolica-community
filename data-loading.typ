@@ -20,9 +20,13 @@ descriptions and source identities, two universal resource wheels, and the small
 whenever resource contents change. CI uses `--check-catalog` to require matching
 sources without rewriting those expectations.
 
-Install the engine and its matching data wheel together. Ordinary import only
+Install the engine and its matching data wheels together. The resource wheels
+own disjoint `symbolica/_data/fonts/` and `symbolica/_data/vakint-data/`
+directories; they do not install or overwrite the engine's Python modules.
+No path configuration is needed: ordinary import automatically
 locates the installed resources; it does not read their large payloads or access
-the network. Rust callers can configure `symbolica_data::Data::set_directory`
+the network. A missing resource reports which package to install and its pip
+command. Standalone Rust callers can configure `symbolica_data::Data::set_directory`
 or set `SYMBOLICA_DATA_DIRECTORY` to one or more extracted bundles separated by
 the platform path separator. `Data::set_directories` accepts multiple roots.
 
