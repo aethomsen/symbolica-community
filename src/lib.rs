@@ -15,6 +15,7 @@ use symbolica::{
 use symbolica_integrate::Integrate;
 
 mod citations;
+mod data;
 #[cfg(feature = "community")]
 mod hepkit;
 #[cfg(feature = "community")]
@@ -94,6 +95,10 @@ fn core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     })
     .map_err(PyRuntimeError::new_err)?;
     create_symbolica_module(m)?;
+    m.add_function(wrap_pyfunction!(data::_set_data_directories, m)?)?;
+    m.add_function(wrap_pyfunction!(data::_data_manifest, m)?)?;
+    m.add_function(wrap_pyfunction!(data::_install_data_asset, m)?)?;
+    m.add_function(wrap_pyfunction!(data::_read_data_asset, m)?)?;
     m.add_function(wrap_pyfunction!(citations::get_citations, m)?)?;
     #[cfg(feature = "community")]
     {

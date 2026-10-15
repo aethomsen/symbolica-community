@@ -160,12 +160,12 @@ def _(
                 edge = half.edge
                 if edge.is_external:
                     numerator = sp.TensorExpression(numerator).rename_indices(
-                        {Symbols.half_edge(half.id, 1): ports[edge.external_index]}
+                        {Symbols.half_edge()(half.id, 1): ports[edge.external_index]}
                     )
             denominator = kinematics.apply(
                 diagram.denominator_expression(dimension=4, in_lmb=True)
                 .to_expression()
-                .replace(Symbols.denominator(a, b, c, inverse), inverse)
+                .replace(Symbols.denominator()(a, b, c, inverse), inverse)
             ).expand()
             denominators.append(denominator)
             amplitude += (
@@ -179,7 +179,7 @@ def _(
             for d in ((t, s - mass**2, u - mass**2) if count == 3 else (t,))
         )
         operator = amplitude.expand()
-        assert len(operator.structure.slots) == (8 if count == 3 else 6)
+        assert len(operator.structure.slots()) == (8 if count == 3 else 6)
         adjoint = (
             sp.TensorExpression(operator)
             .dirac_adjoint()
@@ -217,7 +217,7 @@ def _(
             if position < 2:
                 initial_colors *= abs(particle.color)
             matches = []
-            for slot in operator.structure.slots:
+            for slot in operator.structure.slots():
                 original = slot.to_expression()
                 if original.replace(ports[position], E("0")) == original:
                     continue
@@ -362,13 +362,13 @@ def _(mo):
 
 @app.cell
 def _(E, Kinematics, S, hep, model, sp):
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     s = S("s", is_positive=True)
     t, u = S("t", "u")
     mass = model.particle("b").mass
     gs = model.parameter("G").symbol
     Nc, dA, cof, coad = (
-        sp.Nc,
+        sp.Nc(),
         S("dA"),
         sp.Representation.cof,
         sp.Representation.coad,

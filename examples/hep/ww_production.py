@@ -41,7 +41,8 @@ def _():
     import numpy as np
     from symbolica import E, S, Symbol
     from symbolica import set_namespace as _set_namespace
-    from symbolica.community.hepkit import Kinematics, Model, RenderSettings
+    from symbolica.community.hepkit import Kinematics, Model
+    from symbolica.community.graph import RenderSettings
     from symbolica.community.tensor import TensorExpression
 
     _set_namespace("ww")
@@ -116,7 +117,7 @@ def _(mo):
 
 @app.cell
 def _(E, Kinematics, S, Symbol, hep, model):
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     charge = -model.particle("e-").electric_charge
     sw = model.parameter("sw").symbol
     cw = model.parameter("cw").symbol
@@ -200,7 +201,7 @@ def _(E, S, Symbols, generated, kin, me, model, sp, vev, ye, yme):
         _denominator = kin.apply(
             _diagram.denominator_expression(dimension=4, in_lmb=True)
             .to_expression()
-            .replace(Symbols.denominator(a, b, c, inverse), inverse)
+            .replace(Symbols.denominator()(a, b, c, inverse), inverse)
         ).expand()
         _particle_name = _diagram.internal_edges[0].particle_name
         _term = (
@@ -559,7 +560,7 @@ def _(mo):
 
 @app.cell
 def _(Kinematics, hep, me, mw, one, pi, primitive, s, t, u, zero):
-    _P = hep.Kinematics.external_momentum
+    _P = hep.Kinematics.external_momentum()
     _kin = Kinematics.mandelstam(
         [_P(_i) for _i in range(4)], [me**2, me**2, mw**2, mw**2], [s, t, u]
     )

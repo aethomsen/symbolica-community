@@ -32,7 +32,7 @@ opt-level = 2
 [profile.release]
 lto = "thin"
 opt-level = 3
-#codegen-units = 1
+codegen-units = 1
 strip = "symbols"
 
 # Optimize browser downloads separately from native release performance.
@@ -86,6 +86,8 @@ python_stubgen = [
 ]
 
 [dependencies]
+symbolica-data = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
+serde_json = "1"
 fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "4572d7a1d2e26e11b7ec213eda998efb7a5e8caa", default-features = false }
 hyperbolica = { optional = true, git = "https://github.com/lcnbr/hyperbolica", rev = "2e6fe4ef9c715d70f937aca53211793727f819b9", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
@@ -109,8 +111,8 @@ pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, f
 oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false, features = ["community"] }
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
-# RustRed-enabled Vakint, with the same modern FeynKit tensor bridge as this host.
-vakint = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop", rev = "854e849570cf44e115063e97d612090a0ff48121", features = ["symbolica_community_module"] }
+# RustRed-enabled Vakint is independently pinned; its assets use the host loader.
+vakint = { optional = true, git = "https://github.com/alphal00p/gammaloop", rev = "4b2324b900c3703bfec11297c8d73e3f00c25c5c", features = ["symbolica_community_module"] }
 
 # All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]

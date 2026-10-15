@@ -180,7 +180,7 @@ def _(
                         in_lmb=True,
                     )
                     .to_expression()
-                    .replace(Symbols.denominator(a, b, c, inverse), inverse)
+                    .replace(Symbols.denominator()(a, b, c, inverse), inverse)
                     .replace(K(0, index), orientation * k1(index))
                 )
                 total += (
@@ -274,9 +274,9 @@ def _(mo):
 @app.cell
 def _(E, Kinematics, S, Symbols, hep, model, sp):
     Q, P, K = (
-        Symbols.edge_momentum,
-        hep.Kinematics.external_momentum,
-        hep.Kinematics.loop_momentum,
+        Symbols.edge_momentum(),
+        hep.Kinematics.external_momentum(),
+        hep.Kinematics.loop_momentum(),
     )
     s, t, u = S("s", "t", "u")
     _electron = model.particle("e-")

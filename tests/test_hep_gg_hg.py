@@ -27,7 +27,7 @@ SPEC.loader.exec_module(SUPPORT)
 
 
 @pytest.fixture
-def session(tmp_path):
+def session(tmp_path, higgs_jet_data):
     session = SUPPORT.CalculationSession(
         EXAMPLES / "data" / "gg_hg" / "native-model.json", tmp_path,
     )
@@ -68,7 +68,7 @@ def cancelled(*args, **kwargs):
     raise numerical.CalculationCancelled("controlled stage interruption")
 
 
-def test_native_inputs_do_not_read_numerical_references(tmp_path, monkeypatch):
+def test_native_inputs_do_not_read_numerical_references(tmp_path, monkeypatch, higgs_jet_data):
     original_open = Path.open
 
     def guarded_open(path, *args, **kwargs):
@@ -89,7 +89,7 @@ def test_native_inputs_do_not_read_numerical_references(tmp_path, monkeypatch):
         session.close()
 
 
-def test_cooperative_transport_checkpoints_yields_and_cancels(tmp_path, monkeypatch):
+def test_cooperative_transport_checkpoints_yields_and_cancels(tmp_path, monkeypatch, higgs_jet_data):
     def no_threads(*args, **kwargs):
         raise AssertionError("Cooperative execution must not create worker threads")
 
@@ -144,7 +144,7 @@ def test_cooperative_transport_checkpoints_yields_and_cancels(tmp_path, monkeypa
         session.close()
 
 
-def test_cooperative_wait_timeout_retains_work(tmp_path):
+def test_cooperative_wait_timeout_retains_work(tmp_path, higgs_jet_data):
     session = SUPPORT.CalculationSession(
         EXAMPLES / "data" / "gg_hg" / "native-model.json", tmp_path, cooperative=True,
     )

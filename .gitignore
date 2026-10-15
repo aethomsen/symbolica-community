@@ -5,6 +5,8 @@ flake.lock
 /.venv
 /.zed
 /target
+/target-wasm/
+/target-vakint-tests/
 /.vscode
 *.cpp
 *.so

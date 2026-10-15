@@ -198,7 +198,7 @@ def _(
             )
             _color_slots = [
                 slot.dual().to_expression()
-                for slot in TensorExpression(_numerator).structure.slots
+                for slot in TensorExpression(_numerator).structure.slots()
                 if slot.to_expression().matches(
                     sp.PortPattern.exact(_rep(_numeric_dim), index)
                 )
@@ -260,7 +260,7 @@ def _(
             TensorExpression(_numerator)
             .with_lorentz_dimension(D)
             .to_expression()
-            .replace(Symbols.dimension, D)
+            .replace(Symbols.dimension(), D)
             .replace(mUV**2, M)
         )
         if _incoming == [gluon]:
@@ -455,7 +455,7 @@ def _(
             )
             _color_slots = [
                 slot.dual().to_expression()
-                for slot in TensorExpression(_numerator).structure.slots
+                for slot in TensorExpression(_numerator).structure.slots()
                 if slot.to_expression().matches(
                     sp.PortPattern.exact(_rep(_numeric_dim), index)
                 )
@@ -1049,15 +1049,15 @@ def _(E, Model, S, Symbols, json, sp):
             _propagator["numerator"] = (
                 E("-1𝑖")
                 * (
-                    Symbols.ufo_metric(Symbols.ufo_index(1, 1), Symbols.ufo_index(1, 2))
+                    Symbols.ufo_metric()(Symbols.ufo_index()(1, 1), Symbols.ufo_index()(1, 2))
                     - (1 - S("xi"))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 1))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 2))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 1))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 2))
                     / sp.TensorName.g().to_expression()(
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
                     )
@@ -1092,7 +1092,7 @@ def _(mo):
 
 @app.cell
 def _(S, Symbols, hep, model, sp):
-    K, P = hep.Kinematics.loop_momentum, hep.Kinematics.external_momentum
+    K, P = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     mass = model.particle("b").mass
     gs = model.parameter("G").symbol
     mink, bis, gamma, metric = (
@@ -1112,7 +1112,7 @@ def _(S, Symbols, hep, model, sp):
         "right_",
     )
     den, edge_, mom_, mass_, quad_ = (
-        Symbols.denominator,
+        Symbols.denominator(),
         S("edge_"),
         S("mom_"),
         S("mass_"),
@@ -1913,7 +1913,7 @@ def _(D, K, Kinematics, P, S, Symbols, s, sp):
     # Taylor-expand external momenta to the superficial divergence degree. This
     # follows the original massive reference independently of graph.uv_expansion.
     irr_edge_momentum, irr_dot, irr_coordinate, irr_scaling, irr_a, irr_b = (
-        Symbols.edge_momentum,
+        Symbols.edge_momentum(),
         sp.TensorPattern.dot,
         S("qcd_irr::x"),
         S("qcd_irr::t"),

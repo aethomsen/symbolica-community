@@ -27,8 +27,10 @@ def test_cff_and_ltd_agree_for_triangle():
     ]
     difference = (cff.to_expression() - ltd.to_expression()).replace_multiple(routing)
     assert difference.together().is_zero()
+    edge = diagram.internal_edges[0]
+    assert edge.energy_expression() == q(edge.id, cind(0))
     polynomial = diagram.integrate_energy(
-        method="cff", numerator=q(diagram.internal_edges[0].id, cind(0)) ** 2
+        method="cff", numerator=edge.energy_expression() ** 2
     )
     assert isinstance(polynomial, hep.CffRepresentation)
     assert not polynomial.to_expression().is_zero()

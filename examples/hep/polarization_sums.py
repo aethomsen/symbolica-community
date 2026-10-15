@@ -279,7 +279,7 @@ def _(
     scale,
     sp,
 ):
-    _ket, _bra = (Symbols.polarization, Symbols.polarization_conjugate)
+    _ket, _bra = (Symbols.polarization(), Symbols.polarization_conjugate())
     _pair = _ket(7, sp.PortPattern.exact(lorentz, i)) * _bra(
         7, sp.PortPattern.exact(lorentz, j)
     )

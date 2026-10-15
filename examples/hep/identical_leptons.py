@@ -90,7 +90,7 @@ def _(mo):
 
 @app.cell
 def _(Kinematics, S, hep, lepton_model, reaction):
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     s = S("s", is_positive=True)
     t, u = S("t", "u")
     _electron = lepton_model.particle("e-")
@@ -122,7 +122,7 @@ def _(S, Symbols, kinematics, lepton_generated, reaction, s, t, u):
         kinematics.apply(
             diagram.denominator_expression(dimension=4, in_lmb=True)
             .to_expression()
-            .replace(Symbols.denominator(_a, _b, _c, _inverse), _inverse)
+            .replace(Symbols.denominator()(_a, _b, _c, _inverse), _inverse)
         ).expand()
         for diagram in lepton_generated.diagrams
     ]

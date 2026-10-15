@@ -77,17 +77,58 @@ app.run(defs=definitions)
 @pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda path: path.stem)
 def test_notebook_runs_from_clean_session(path):
     if path.stem == "gg_hg":
-        pytest.skip("Cold transport is a long acceptance; rendering has a separate lightweight fixture.")
+        pytest.skip(
+            "Cold transport is a long acceptance; rendering has a separate lightweight fixture."
+        )
     run_notebook(path)
 
 
 @pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda path: path.stem)
 def test_helpers_have_one_folded_preamble(path):
+    tree = ast.parse(path.read_text())
     cells = [
         node
-        for node in ast.parse(path.read_text()).body
+        for node in tree.body
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
     ]
+    setup_blocks = [
+        node
+        for node in tree.body
+        if isinstance(node, ast.With)
+        and any(
+            isinstance(item.context_expr, ast.Call)
+            and isinstance(item.context_expr.func, ast.Attribute)
+            and isinstance(item.context_expr.func.value, ast.Name)
+            and item.context_expr.func.value.id == "app"
+            and item.context_expr.func.attr == "setup"
+            for item in node.items
+        )
+    ]
+    if setup_blocks:
+        # Marimo's setup context is itself the folded helper preamble. Keep it
+        # before all reactive calculations and reject helper definitions later.
+        assert len(setup_blocks) == 1, path
+        block = setup_blocks[0]
+        assert block.end_lineno < min(cell.lineno for cell in cells), path
+        assert all(
+            isinstance(item.context_expr, ast.Call)
+            and any(
+                kw.arg == "hide_code"
+                and isinstance(kw.value, ast.Constant)
+                and kw.value.value is True
+                for kw in item.context_expr.keywords
+            )
+            for item in block.items
+        ), path
+        if any(
+            isinstance(node, (ast.FunctionDef, ast.ClassDef)) for node in block.body
+        ):
+            assert not any(
+                isinstance(node, (ast.FunctionDef, ast.ClassDef))
+                for cell in cells
+                for node in cell.body
+            ), path
+            return
     setup = [
         i
         for i, cell in enumerate(cells)

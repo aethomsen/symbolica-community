@@ -102,7 +102,7 @@ def _(E, S, TensorExpression, adjoint_model, mo, symmetric_generated):
         .to_expression()
         .replace(adjoint_model.coupling("GC_69").symbol, E("1"))
     )
-    assert len(symmetric_color.structure.slots) == 3
+    assert len(symmetric_color.structure.slots()) == 3
     assert (
         symmetric_color.dirac_adjoint().to_expression()
         == symmetric_color.to_expression()

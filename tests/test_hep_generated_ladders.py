@@ -5,7 +5,7 @@ from importlib import import_module
 from types import SimpleNamespace
 
 import pytest
-from symbolica import E, Graph, Replacement, S
+from symbolica import E, Graph, S
 from symbolica.community import hepkit as hep
 from symbolica.community import tensor as sp
 
@@ -123,11 +123,18 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
     model = hep.Model.standard_model()
     dimension = S("direct_ladder_test::D")
     build = next(cell for cell in cells if "numerator" in cell.defs)
-    _, values = build.run(D=dimension, diagram=diagram, model=model, sp=sp)
+    _, values = build.run(
+        D=dimension, diagram=diagram, model=model, TensorExpression=sp.TensorExpression
+    )
     numerator = values["numerator"]
     assert not numerator.to_expression().contains(model.particle("b").mass)
     project = next(cell for cell in cells if "projector" in cell.defs)
-    _, values = project.run(D=dimension, numerator=numerator, sp=sp)
+    _, values = project.run(
+        D=dimension,
+        numerator=numerator,
+        Representation=sp.Representation,
+        TensorExpression=sp.TensorExpression,
+    )
     projector = values["projector"]
     assert (projector * numerator).rank == 0
 
@@ -136,7 +143,7 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
     old_projector, color, spacetime = project_and_split(numerator, dimension)
     assert projector.to_expression() == old_projector.to_expression()
     reduce = next(cell for cell in cells if "reduced" in cell.defs)
-    _, values = reduce.run(numerator=numerator, projector=projector, sp=sp)
+    _, values = reduce.run(numerator=numerator, projector=projector)
     reduced = values["reduced"]
     dot_numerator = values["dot_numerator"]
     assert reduced.reduction_status == sp.ReductionStatus.Complete
@@ -157,13 +164,13 @@ def test_notebook_projects_and_reduces_selected_ladder_without_splitting(ladder)
     polynomial_cell = next(cell for cell in cells if "polynomial" in cell.defs)
     _, result = polynomial_cell.run(
         D=dimension,
-        Replacement=Replacement,
         S=S,
         diagram=diagram,
         dot_coordinates=helpers["dot_coordinates"],
         dot_numerator=dot_numerator,
         graph_weight=diagram.overall_factor_expression(evaluate=True),
         model=model,
+        Symbols=hep.Symbols,
     )
     weight = E("-1" if quark else "1/2")
     assert result["weighted_numerator"] == weight * result["polynomial"]

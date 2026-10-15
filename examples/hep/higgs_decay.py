@@ -87,7 +87,7 @@ def _(mo):
 
 @app.cell
 def _(channel, hep, model):
-    P = hep.Kinematics.external_momentum
+    P = hep.Kinematics.external_momentum()
     charge = -model.particle("e-").electric_charge
     sw = model.parameter("sw").symbol
     cw = model.parameter("cw").symbol

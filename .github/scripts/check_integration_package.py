@@ -5,7 +5,13 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlencode
 from zipfile import ZipFile
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 ALGEBRA = ("symbolica", "numerica", "graphica")
 HEPKIT = (
@@ -106,10 +112,28 @@ def declared_source(root, name):
     return matches[0]["source"]
 
 
+def algebra_sources():
+    """Honor the host's explicit kernel and numeric-owner patch declarations."""
+    manifest = Path(__file__).resolve().parents[2] / "Cargo.toml"
+    patches = tomllib.loads(manifest.read_text())["patch"]["crates-io"]
+    sources = {}
+    for name in ALGEBRA:
+        patch = patches[name]
+        refs = {key: patch[key] for key in ("branch", "rev", "tag") if key in patch}
+        assert len(refs) == 1 and "path" not in patch, (name, "expected published algebra source", patch)
+        sources[name] = "git+" + patch["git"] + "?" + urlencode(refs, safe="/")
+    return sources
+
+
 def check_graph(label, packages, nodes, root, *, community, native):
-    algebra = {singleton(packages, name)["source"] for name in ALGEBRA}
-    assert len(algebra) == 1, (label, "algebra revisions differ", algebra)
-    source = next(iter(algebra))
+    algebra = {name: singleton(packages, name)["source"] for name in ALGEBRA}
+    for name, declared in algebra_sources().items():
+        source = algebra[name]
+        assert source and re.fullmatch(re.escape(declared) + r"#[0-9a-f]{40}", source), (
+            label, "algebra source differs from the host declaration", name, source, declared,
+        )
+    assert algebra["numerica"] == algebra["graphica"], (label, "numeric revisions differ", algebra)
+    source = algebra["numerica"]
     assert source and re.fullmatch(
         r"git\+https://github.com/symbolica-dev/symbolica\?branch=community#[0-9a-f]{40}",
         source,
@@ -126,13 +150,17 @@ def check_graph(label, packages, nodes, root, *, community, native):
         )
     else:
         owners = {
-            owner(singleton(packages, name)) for name in (*HEPKIT, *OPTIONAL_HEPKIT)
+            owner(singleton(packages, name)) for name in (*HEPKIT, *OPTIONAL_HEPKIT, "symbolica-data")
             if name in HEPKIT or name in names
         }
         assert len(owners) == 1, (label, "mixed HEPKit owners", owners)
         hepkit_owner = next(iter(owners))
         feynkit_source = singleton(packages, "feynkit-py")["source"]
         if feynkit_source is not None:
+            assert re.fullmatch(
+                r"git\+https://github.com/alphal00p/gammaloop\?branch=feynkit#[0-9a-f]{40}",
+                feynkit_source,
+            ), (label, "expected upstream FeynKit branch", feynkit_source)
             assert feynkit_source.startswith(declared_source(root, "feynkit-py") + "#"), (
                 label, "HEPKit source differs from the host declaration", feynkit_source,
             )

@@ -17,14 +17,13 @@ import sys
 
 app = runpy.run_path(sys.argv[1], run_name="notebook_check")["app"]
 _, notebook = app.run()
-inputs = notebook["gghh_inputs"]
-source = inputs.catalogue(progress=None)
+source = notebook["gghh_catalogue"](progress=None)
 # The unfiltered catalogue intentionally includes exact-zero diagrams. Select
 # a nonzero box for this changing-runtime-point regression.
 box = next(diagram for diagram in source.diagrams
            if diagram.loop_count == 1 and len(diagram.internal_edges) == 4
            and all(abs(edge.particle.pdg_code) == 6 for edge in diagram.internal_edges))
-prepared = inputs.prepare(source=source, selected=box.id)
+prepared = notebook["gghh_prepare"](source=source, selected=box.id)
 first = prepared.runtime_point({"sqrt_s": 300, "higgs_mass": 125, "cos_theta": 0.8})
 second = prepared.runtime_point({"sqrt_s": 400, "higgs_mass": 125, "cos_theta": 0.4})
 assert first
@@ -58,9 +57,18 @@ def test_gghh_notebook_dataflow_and_native_types(tmp_path):
     pytest.importorskip("marimo", minversion="0.24.0")
     root = Path(__file__).parents[1]
     checked = subprocess.run(
-        [sys.executable, "-m", "marimo", "check", "--strict",
-         str(root / "examples/hep/gghh_complete.py")],
-        cwd=root, capture_output=True, text=True, timeout=60,
+        [
+            sys.executable,
+            "-m",
+            "marimo",
+            "check",
+            "--strict",
+            str(root / "examples/hep/gghh_complete.py"),
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=60,
     )
     assert checked.returncode == 0, checked.stdout + checked.stderr
 
@@ -92,6 +100,9 @@ def generation_types(integral: sd.Integral) -> None:
     path.write_text(source)
     checked = subprocess.run(
         [str(ty), "check", "--python", sys.executable, str(path)],
-        cwd=root, capture_output=True, text=True, timeout=60,
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=60,
     )
     assert checked.returncode == 0, checked.stdout + checked.stderr

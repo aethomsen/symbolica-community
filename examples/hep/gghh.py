@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.25.1"
 app = marimo.App(width="medium", app_title="gg → HH · one double box")
 
 
@@ -38,7 +38,21 @@ async def _():
         QmcSettings, HavanaDiscreteSettings, with_diagram_expressions,
     )
     from symbolica.community.tensor import Tensor, TensorName, Representation, dot
-    return E, Fraction, HavanaDiscreteSettings, QmcSettings, Representation, S, Tensor, TensorName, dot, hep, mo, with_diagram_expressions
+
+    return (
+        E,
+        Fraction,
+        HavanaDiscreteSettings,
+        QmcSettings,
+        Representation,
+        S,
+        Tensor,
+        TensorName,
+        dot,
+        hep,
+        mo,
+        with_diagram_expressions,
+    )
 
 
 @app.cell(hide_code=True)
@@ -63,39 +77,19 @@ def _(mo):
     return
 
 
-@app.cell
-def _(E, Fraction, hep, mo):
-    # Exact transport of numerical external data; no algebra implementation.
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Setup and notebook helpers
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(E, Fraction, mo):
     def exact(z):
         return E(str(Fraction(z.real))) + E("1i") * E(str(Fraction(z.imag)))
 
-    mt, mH, sqrt_s = 172.5, 125.0, 300.0
-    model = hep.Model.standard_model()
-    values = model.scalar_bindings(overrides={
-        model.parameter(name).symbol: exact(value)
-        for name, value in dict(MT=mt, ymt=mt, MH=mH, WT=0.0, WH=0.0).items()
-    })
-    mo.ui.table([{"parameter": name, "value (GeV)": value}
-                 for name, value in {"mt = ymt": mt, "mH": mH, "sqrt(s)": sqrt_s,
-                                     "top/Higgs widths": 0}.items()])
-    return exact, mH, model, mt, sqrt_s, values
-
-
-@app.cell
-def _(E, hep, model):
-    vertices = [v for v in model.vertex_rules
-                if sorted(model.particle(p).pdg_code for p in v.particles)
-                in ([-6, 6, 21], [-6, 6, 25])]  # ttg and ttH
-    process = model.process([21, 21], [25, 25], vertex_allow=vertices)
-    diagrams = process.generate_diagrams(
-        loops=2, max_vertices=6, threads=1, projector=E("1"),
-        numerator_grouping=hep.NumeratorGrouping("none"),
-    ).diagrams
-    return diagrams, process
-
-
-@app.cell
-def _(diagrams, mo):
     def is_double_box(d):
         top = [e for e in d.internal_edges if abs(e.particle.pdg_code) == 6]
         gluons = [e for e in d.internal_edges if e.particle.pdg_code == 21]
@@ -111,15 +105,80 @@ def _(diagrams, mo):
         return (len(pairs) == 2 and len({v for pair in pairs for v in pair}) == 4
                 and all(sorted([legs[a], legs[b]]) == [21, 25] for a, b in pairs))
 
+    def integrate(session):
+        while not session.complete:
+            snapshot = session.step()  # one QMC package or global Havana batch
+            estimate = snapshot.estimate
+            rows = [] if estimate is None else [
+                {"epsilon power": n, "component": part, "value": value, "standard error": error,
+                 "relative error (per mil)": 1000*error/abs(value) if value else None}
+                for n, part, value, error in zip(estimate.orders, estimate.components,
+                                                estimate.mean, estimate.standard_error)]
+            mo.output.replace(mo.vstack([
+                mo.hstack([mo.stat(label="Accepted points", value=f"{snapshot.completed_points:,}"),
+                           mo.stat(label="Planned", value=f"{snapshot.planned_points:,}"),
+                           mo.stat(label="Worker time", value=f"{snapshot.worker_seconds:.1f} s")]),
+                mo.md(f"**{snapshot.method} · {snapshot.stage}** · uncertainty: {snapshot.uncertainty}"),
+                mo.ui.table(rows) if rows else mo.md("Waiting for a native production estimate…"),
+            ]))
+        return session.snapshot()
+
+    return exact, integrate, is_double_box
+
+
+@app.cell
+def _(exact, hep, mo):
+    # Exact transport of numerical external data; no algebra implementation.
+
+    mt, mH, sqrt_s = 172.5, 125.0, 300.0
+    model = hep.Model.standard_model()
+    values = model.scalar_bindings(overrides={
+        model.parameter(name).symbol: exact(value)
+        for name, value in dict(MT=mt, ymt=mt, MH=mH, WT=0.0, WH=0.0).items()
+    })
+    mo.ui.table([{"parameter": name, "value (GeV)": value}
+                 for name, value in {"mt = ymt": mt, "mH": mH, "sqrt(s)": sqrt_s,
+                                     "top/Higgs widths": 0}.items()])
+    return mH, model, sqrt_s, values
+
+
+@app.cell
+def _(E, hep, model):
+    vertices = [v for v in model.vertex_rules
+                if sorted(model.particle(p).pdg_code for p in v.particles)
+                in ([-6, 6, 21], [-6, 6, 25])]  # ttg and ttH
+    process = model.process([21, 21], [25, 25], vertex_allow=vertices)
+    diagrams = process.generate_diagrams(
+        loops=2, max_vertices=6, threads=1, projector=E("1"),
+        numerator_grouping=hep.NumeratorGrouping("none"),
+    ).diagrams
+    return (diagrams,)
+
+
+@app.cell
+def _(diagrams, is_double_box, mo):
+
     double_boxes = [d for d in diagrams if is_double_box(d)]
     raw_diagram = double_boxes[0]
     mo.vstack([mo.md(f"**{len(double_boxes)} double boxes** among {len(diagrams)} diagrams; using {raw_diagram.name}."),
                mo.as_html(raw_diagram.render())])
-    return double_boxes, raw_diagram
+    return (raw_diagram,)
 
 
 @app.cell
-def _(E, Representation, S, Tensor, TensorName, dot, exact, hep, mH, raw_diagram, sqrt_s):
+def _(
+    E,
+    Representation,
+    S,
+    Tensor,
+    TensorName,
+    dot,
+    exact,
+    hep,
+    mH,
+    raw_diagram,
+    sqrt_s,
+):
     eps, D = S("gghh::eps", "gghh::D")
     P, K = hep.Kinematics.external_momentum(), hep.Kinematics.loop_momentum()
     legs = sorted(hep.Amplitude.from_diagram(raw_diagram).legs, key=lambda leg: leg.index)
@@ -152,7 +211,17 @@ def _(E, Representation, S, Tensor, TensorName, dot, exact, hep, mH, raw_diagram
 
 
 @app.cell
-def _(D, E, Representation, gluons, kinematics, mo, pol, raw_diagram, with_diagram_expressions):
+def _(
+    D,
+    E,
+    Representation,
+    gluons,
+    kinematics,
+    mo,
+    pol,
+    raw_diagram,
+    with_diagram_expressions,
+):
     color = Representation.coad(8).id(*(leg.tensor_index for leg in gluons))
     polarization = pol[0](next(s for s in gluons[0].slots if s.representation == Representation.mink(4)))
     polarization *= pol[1](next(s for s in gluons[1].slots if s.representation == Representation.mink(4)))
@@ -170,7 +239,7 @@ def _(D, E, Representation, gluons, kinematics, mo, pol, raw_diagram, with_diagr
     )
     mo.accordion({"Contracted scalar numerator · preview": mo.as_html(
         numerator.formatted(max_terms=8, max_line_length=90, show_namespaces=False))})
-    return diagram, numerator
+    return (diagram,)
 
 
 @app.cell(hide_code=True)
@@ -246,32 +315,10 @@ def _(QmcSettings, kernels):
     return (session,)
 
 
-@app.cell
-def _(mo):
-    def integrate(session):
-        while not session.complete:
-            snapshot = session.step()  # one QMC package or global Havana batch
-            estimate = snapshot.estimate
-            rows = [] if estimate is None else [
-                {"epsilon power": n, "component": part, "value": value, "standard error": error,
-                 "relative error (per mil)": 1000*error/abs(value) if value else None}
-                for n, part, value, error in zip(estimate.orders, estimate.components,
-                                                estimate.mean, estimate.standard_error)]
-            mo.output.replace(mo.vstack([
-                mo.hstack([mo.stat(label="Accepted points", value=f"{snapshot.completed_points:,}"),
-                           mo.stat(label="Planned", value=f"{snapshot.planned_points:,}"),
-                           mo.stat(label="Worker time", value=f"{snapshot.worker_seconds:.1f} s")]),
-                mo.md(f"**{snapshot.method} · {snapshot.stage}** · uncertainty: {snapshot.uncertainty}"),
-                mo.ui.table(rows) if rows else mo.md("Waiting for a native production estimate…"),
-            ]))
-        return session.snapshot()
-    return (integrate,)
-
-
 @app.cell(disabled=True)
 def _(integrate, session):
     qmc_result = integrate(session)
-    return (qmc_result,)
+    return
 
 
 @app.cell
@@ -287,7 +334,7 @@ def _(integrate, mc):
         integrate(mc)
         mc.freeze_production(points_per_batch=1024, batches=8)
     mc_result = integrate(mc)
-    return (mc_result,)
+    return
 
 
 @app.cell
@@ -302,7 +349,7 @@ def _(kernels, mo):
         mo.download("\n\n".join(citation.to_bibtex() for citation in citations).encode(),
                     filename="fastsecdec-references.bib", label="Download BibTeX"),
     ])
-    return (citations,)
+    return
 
 
 if __name__ == "__main__":

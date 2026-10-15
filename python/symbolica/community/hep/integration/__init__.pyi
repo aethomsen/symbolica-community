@@ -387,7 +387,7 @@ class HiggsJetIntegralSystem:
     @property
     def automatic_boundary_generation_available(self) -> builtins.bool:
         r"""
-        Whether this build contains native reduction and boundary generation.
+        Whether this build contains automatic reduction and boundary generation.
         """
     @property
     def dimension(self) -> builtins.int: ...
@@ -717,7 +717,9 @@ class UnsupportedInputError(EvaluationError):
     """
     ...
 
-from .data import load_higgs_jet_data as load_higgs_jet_data
+def higgs_jet_data_manifest() -> builtins.dict[builtins.str, tuple[builtins.str, builtins.str, builtins.bool]]: ...
 
-def higgs_jet_data_manifest() -> builtins.dict[builtins.str, builtins.tuple[builtins.str, builtins.str, builtins.bool]]: ...
-def install_higgs_jet_data(documents: builtins.dict[builtins.str, builtins.str]) -> None: ...
+def install_higgs_jet_data(documents: typing.Mapping[builtins.str, builtins.str]) -> None: ...
+
+
+from .data import load_higgs_jet_data as load_higgs_jet_data

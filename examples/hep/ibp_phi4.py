@@ -351,15 +351,15 @@ def _(
     vacuum_kinematics,
 ):
     K, P, dim = (
-        hep.Kinematics.loop_momentum,
-        hep.Kinematics.external_momentum,
-        Symbols.dimension,
+        hep.Kinematics.loop_momentum(),
+        hep.Kinematics.external_momentum(),
+        Symbols.dimension(),
     )
     model_mass = model.parameter("mass").symbol
     model_coupling = model.parameter("lam").symbol
     index, dimension = S("index_", "dimension_")
     den, edge_, mom_, mass_, quad_ = (
-        Symbols.denominator,
+        Symbols.denominator(),
         S("edge_"),
         S("mom_"),
         S("mass_"),

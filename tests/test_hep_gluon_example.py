@@ -43,7 +43,7 @@ def test_tensor_helpers_preserve_external_interface(notebook):
         contracted = numerator.simplify_algebra(gamma=True, epsilon=True).contract()
         projector = n.external_projector(contracted)
         assert numerator.rank == contracted.rank == projector.rank == 2
-        assert numerator.structure.slots == contracted.structure.slots
+        assert numerator.structure.slots() == contracted.structure.slots()
         assert set(projector.list_dangling()) == set(numerator.list_dangling())
         assert n.apply_projector(contracted, projector).is_scalar
 

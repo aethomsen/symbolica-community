@@ -194,7 +194,13 @@ def _(
         )
         assert mapping is not None
         # IntegralMapping acts on scalar numerators: reduce free loop indices first.
-        reduced = mapping.apply(kinematics.apply(reducer.reduce(trace))).expand()
+        reduced_tensor = (
+            TensorExpression(reducer.reduce(trace))
+            .contract()
+            .to_dots()
+            .to_expression()
+        )
+        reduced = mapping.apply(kinematics.apply(reduced_tensor)).expand()
         reduced = reduced.replace_multiple(
             [
                 Replacement(
@@ -273,8 +279,8 @@ def _(Model, S, hep, sp):
     gs = model.parameter("G").symbol
     y, mu, nu, ca, cb, eps = S("y", "mu", "nu", "ca", "cb", "eps")
     K, P, mink, cof, coad, metric = (
-        hep.Kinematics.loop_momentum,
-        hep.Kinematics.external_momentum,
+        hep.Kinematics.loop_momentum(),
+        hep.Kinematics.external_momentum(),
         sp.Representation.mink,
         sp.Representation.cof,
         sp.Representation.coad,

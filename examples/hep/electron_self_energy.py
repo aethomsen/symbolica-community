@@ -177,15 +177,15 @@ def _(E, Model, S, Symbols, json, sp):
             _propagator["numerator"] = (
                 E("-1𝑖")
                 * (
-                    Symbols.ufo_metric(Symbols.ufo_index(1, 1), Symbols.ufo_index(1, 2))
+                    Symbols.ufo_metric()(Symbols.ufo_index()(1, 1), Symbols.ufo_index()(1, 2))
                     - (1 - S("xi"))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 1))
-                    * Symbols.ufo_momentum(Symbols.ufo_index(1, 2))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 1))
+                    * Symbols.ufo_momentum()(Symbols.ufo_index()(1, 2))
                     / sp.TensorName.g().to_expression()(
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
-                        Symbols.ufo_momentum(
+                        Symbols.ufo_momentum()(
                             sp.PortPattern.exact(sp.Representation.mink(4))
                         ),
                     )
@@ -241,7 +241,7 @@ def _(mo):
 
 @app.cell
 def _(D, E, Kinematics, S, diagram, electron, hep, photon, s, sp):
-    K, P = hep.Kinematics.loop_momentum, hep.Kinematics.external_momentum
+    K, P = hep.Kinematics.loop_momentum(), hep.Kinematics.external_momentum()
     mass, charge = electron.mass, -electron.electric_charge
     mink, bis, gamma, metric = (
         sp.Representation.mink,

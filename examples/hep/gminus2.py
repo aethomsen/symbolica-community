@@ -104,8 +104,8 @@ def _(Kinematics, Model, S, hep, sp):
     mass, charge = _electron.mass, -_electron.electric_charge
     mu = S("mu")
     K, P, mink, bis, metric, gamma = (
-        hep.Kinematics.loop_momentum,
-        hep.Kinematics.external_momentum,
+        hep.Kinematics.loop_momentum(),
+        hep.Kinematics.external_momentum(),
         sp.Representation.mink,
         sp.Representation.bis,
         sp.TensorName.g().to_expression(),

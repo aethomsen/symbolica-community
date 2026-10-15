@@ -97,7 +97,7 @@ def _(Model, S, hep, sp):
     Nc, y, L, scale2 = S("Nc", "y", "L", "mu2")
     I, Af, coordinate = S("I", "Af", "d0")
     K, mink, cof, metric = (
-        hep.Kinematics.loop_momentum,
+        hep.Kinematics.loop_momentum(),
         sp.Representation.mink,
         sp.Representation.cof,
         sp.TensorName.g().to_expression(),

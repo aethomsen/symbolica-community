@@ -37,17 +37,23 @@ jobs:
                   sccache: "true"
 
             - name: Check integration wheel and shared kernel
-              run: python .github/scripts/check_integration_package.py dist/*.whl
+              run: |
+                  python -m pip install "tomli>=2.0.1; python_version < '3.11'"
+                  python .github/scripts/check_integration_package.py dist/*.whl
 
             - name: Check core citation stub in source and wheel
               run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/*.whl
 
+            - name: Build resource wheels
+              run: python scripts/build_data_bundle.py --out dist --check-catalog
+
             - name: Install package and test dependencies
               run: |
-                  for wheel in dist/*.whl; do
+                  pip install dist/symbolica_fonts-*.whl dist/symbolica_vakint_data-*.whl
+                  for wheel in dist/symbolica-*.whl; do
                       pip install "$wheel[notebook-display]"
                   done
-                  pip install pytest ty numpy "tomli>=2.0.1; python_version < '3.11'"
+                  pip install pytest ty numpy matplotlib scipy "marimo>=0.25.1,<0.26" "docstring-to-markdown>=0.17,<1" "tomli>=2.0.1; python_version < '3.11'"
 
             - name: Check public community import types
               run: ty check --python-version 3.10 tests/typing/community_layout.py tests/typing/expression_products.py tests/typing/integration.py tests/typing/loop_integration.py tests/typing/scoped_reductions.py tests/typing/tensor_evaluation.py
@@ -73,11 +79,8 @@ jobs:
                   files: ./coverage.xml
                   fail_ci_if_error: false
 
-            # Install Marimo after the broad suite so only this focused smoke
-            # check enables notebook execution; no two-loop boundaries run here.
             - name: Render the Higgs-jet notebook and check its controller
               env:
                   SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
               run: |
-                  pip install 'marimo>=0.24.2,<0.25'
                   python -m pytest -q tests/test_hep_gg_hg.py tests/test_hep_notebooks.py -k gg_hg

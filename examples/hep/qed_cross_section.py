@@ -124,9 +124,9 @@ def _(mo):
 @app.cell
 def _(Kinematics, S, Symbols, annihilation_cut, hep, qed_diagram, qed_model):
     edge_momentum, external_momentum, loop_momentum = (
-        Symbols.edge_momentum,
-        hep.Kinematics.external_momentum,
-        hep.Kinematics.loop_momentum,
+        Symbols.edge_momentum(),
+        hep.Kinematics.external_momentum(),
+        hep.Kinematics.loop_momentum(),
     )
     qed_p1, qed_p2 = external_momentum(0), external_momentum(1)
     qed_k1, qed_k2 = S("k1", "k2")
@@ -237,7 +237,7 @@ def _(
     _a, _b, _c, _inverse = S("a_", "b_", "c_", "inverse_")
     annihilation_denominator = annihilation_kin.apply(
         annihilation_denominator.replace(
-            Symbols.denominator(_a, _b, _c, _inverse), _inverse
+            Symbols.denominator()(_a, _b, _c, _inverse), _inverse
         )
     )
     qed_squared = (
@@ -426,7 +426,7 @@ def _(mo):
 
 @app.cell
 def _(Symbols, chiral_numerator, qed_diagram, qed_model):
-    _Q = Symbols.edge_momentum
+    _Q = Symbols.edge_momentum()
     _projector = qed_diagram.projector_expression()
     for _edge in qed_diagram.external_edges:
         _projector = qed_model.particle(_edge.particle_name).sum_spins(
@@ -511,7 +511,7 @@ def _(
         "chiral::q_", "chiral::m_", "chiral::power_", "chiral::inverse_"
     )
     _denominator = chiral_kin.apply(
-        _denominator.replace(Symbols.denominator(_q, _m, _power, _inverse), _inverse)
+        _denominator.replace(Symbols.denominator()(_q, _m, _power, _inverse), _inverse)
     )
     qed_polarized = (
         (
