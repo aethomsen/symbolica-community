@@ -169,15 +169,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ar_archive_writer"
-version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73cd58deff2140a0a8eae87e417bd01db68a33e148aa93d1e8cd837e55e312b6"
-dependencies = [
- "object",
-]
-
-[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -363,7 +354,16 @@ dependencies = [
  "cc",
  "cfg-if",
  "constant_time_eq",
- "cpufeatures",
+ "cpufeatures 0.3.1",
+]
+
+[[package]]
+name = "block-buffer"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
+dependencies = [
+ "generic-array",
 ]
 
 [[package]]
@@ -463,7 +463,7 @@ checksum = "6a1f896587b6f2c069c73d2f0913e2d590c3990285cd2f0b6aa02b786b4c679c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -492,9 +492,9 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.6.0"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f74872d07caf508b30a21f6836e7d7016a2eaf7d9ff4f48deaa58cd8a0407630"
+checksum = "6651c9ed80effdc7db0ff72512157f901af5e3549e341e24b1dd4887d836d838"
 dependencies = [
  "find-msvc-tools",
  "shlex",
@@ -621,7 +621,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -804,6 +804,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "corosensei"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6886a0c0f263965933c438626e7179139a62b978a33aa18281cbf0cd5a975f34"
+dependencies = [
+ "autocfg",
+ "cfg-if",
+ "libc",
+ "scopeguard",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "cpufeatures"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59ed5838eebb26a2bb2e58f6d5b5316989ae9d08bab10e0e6d103e656d1b0280"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -913,6 +935,16 @@ name = "crunchy"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
+
+[[package]]
+name = "crypto-common"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a"
+dependencies = [
+ "generic-array",
+ "typenum",
+]
 
 [[package]]
 name = "crypto-common"
@@ -1046,9 +1078,9 @@ dependencies = [
 
 [[package]]
 name = "deranged"
-version = "0.5.8"
+version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cd812cc2bc1d69d4764bd80df88b4317eaef9e773c75226407d9bc0876b211c"
+checksum = "9e9de72ce2ad1f90dc62fa25f0f430ef85eb4b0d8fa0be4f30373bc40a21d28e"
 
 [[package]]
 name = "derive_builder"
@@ -1096,13 +1128,23 @@ dependencies = [
 
 [[package]]
 name = "digest"
+version = "0.10.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
+dependencies = [
+ "block-buffer 0.10.4",
+ "crypto-common 0.1.7",
+]
+
+[[package]]
+name = "digest"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
 dependencies = [
- "block-buffer",
+ "block-buffer 0.12.1",
  "const-oid",
- "crypto-common",
+ "crypto-common 0.2.2",
 ]
 
 [[package]]
@@ -1143,13 +1185,13 @@ checksum = "c6232dd377dcc64799954cbd3a9bb882e9cdc1308ccd87b1c098f1fb2eaf82a8"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]
 name = "dot-parser"
 version = "0.5.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "either",
  "pest",
@@ -1200,9 +1242,9 @@ checksum = "1454db4f2edb7f0e8fe0c5b375b0c978fc63244cc9f010d160e417eb10139aa8"
 
 [[package]]
 name = "either"
-version = "1.18.0"
+version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "252afb9ae5eaa683babdc6a068b3f5726eb19e05070c731f9b2a23a7c3e8ed34"
+checksum = "0e9c71c2167ca323c882b99918929403426e2373ea17242ff5653e0d5e1058be"
 
 [[package]]
 name = "encode_unicode"
@@ -1227,7 +1269,7 @@ checksum = "a65863d15a4ce2888bd2f0f543cc963d3879c3a022c8ee43f6141d479a3ac815"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -1279,9 +1321,9 @@ dependencies = [
 
 [[package]]
 name = "equivalent"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+checksum = "00d174d5400e5e8fd687ad1049e2f578285fa914201b1af7e8b112a4546bd826"
 
 [[package]]
 name = "errno"
@@ -1420,7 +1462,7 @@ dependencies = [
 [[package]]
 name = "feynkit-amplitude"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "feynkit-graph",
  "feynkit-model",
@@ -1434,7 +1476,7 @@ dependencies = [
 [[package]]
 name = "feynkit-cff"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "bincode 2.0.1",
  "feynkit-graph",
@@ -1450,7 +1492,7 @@ dependencies = [
 [[package]]
 name = "feynkit-generator"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "bincode 2.0.1",
  "bincode-trait-derive",
@@ -1470,7 +1512,7 @@ dependencies = [
 [[package]]
 name = "feynkit-graph"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "feynkit-kinematics",
  "feynkit-model",
@@ -1489,7 +1531,7 @@ dependencies = [
 [[package]]
 name = "feynkit-kinematics"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "linnet",
  "numerica",
@@ -1502,7 +1544,7 @@ dependencies = [
 [[package]]
 name = "feynkit-model"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "bincode 2.0.1",
  "bincode-trait-derive",
@@ -1519,7 +1561,7 @@ dependencies = [
 [[package]]
 name = "feynkit-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "feynkit-amplitude",
  "feynkit-cff",
@@ -1545,7 +1587,7 @@ dependencies = [
 [[package]]
 name = "feynkit-tensor"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "feynkit-graph",
  "idenso",
@@ -1558,7 +1600,7 @@ dependencies = [
 [[package]]
 name = "feynkit-ufo"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "feynkit-model",
  "pyo3",
@@ -1690,7 +1732,7 @@ dependencies = [
 [[package]]
 name = "gammaloop-workspace-hack"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "ahash 0.8.12",
  "arrayvec",
@@ -1714,6 +1756,8 @@ dependencies = [
  "num-integer",
  "num-traits",
  "numerica",
+ "proc-macro2",
+ "quote",
  "rand 0.8.8",
  "regex",
  "regex-automata",
@@ -1723,13 +1767,13 @@ dependencies = [
  "serde",
  "serde_core",
  "serde_json",
- "serde_spanned 1.1.1",
+ "serde_spanned 1.1.2",
  "smallvec",
  "smartstring",
  "symbolica",
  "syn 2.0.119",
  "time",
- "toml_datetime 1.1.1+spec-1.1.0",
+ "toml_datetime 1.1.2+spec-1.1.0",
  "toml_parser",
  "toml_writer",
  "tracing",
@@ -1744,6 +1788,16 @@ name = "gat-lending-iterator"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "750117b6c895c40a8feee97fc95da9b5eb4b531ad772af2640a810ea1e4d2102"
+
+[[package]]
+name = "generic-array"
+version = "0.14.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
+dependencies = [
+ "typenum",
+ "version_check",
+]
 
 [[package]]
 name = "getopts"
@@ -1847,7 +1901,7 @@ dependencies = [
 [[package]]
 name = "graphica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#ed2374f1d880d52c3a7ca48cd7c22f4baad5c020"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c78cffc20f318df1fce50539a587cbe8ffc717c0"
 dependencies = [
  "ahash 0.8.12",
  "dyn-clone",
@@ -2341,7 +2395,7 @@ checksum = "ae293c039020f9ec10710af98d29ce6aa2051486638b49c9a6409f3b4a9e98ad"
 [[package]]
 name = "idenso"
 version = "0.3.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "ahash 0.8.12",
  "base64 0.22.1",
@@ -2447,9 +2501,9 @@ checksum = "a588916bfdfd92e71cacef98a63d9b1f0d74d6599980d11894290e7ddefffcf7"
 
 [[package]]
 name = "inventory"
-version = "0.3.24"
+version = "0.3.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4f0c30c76f2f4ccee3fe55a2435f691ca00c0e4bd87abe4f4a851b1d4dac39b"
+checksum = "6928282826c822ad91bf1c9a1cb90a30ba1c26770749929b4656cd6be829cd7c"
 dependencies = [
  "rustversion",
 ]
@@ -2518,9 +2572,9 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "jiff"
-version = "0.2.37"
+version = "0.2.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ab1baf72f08796de0260609515130699b890ac25f30e610ad894bc5856cafdb"
+checksum = "b2b005715dcbeb0089a3c0dab99f2ff1cc3b2525323552703d648585d342a383"
 dependencies = [
  "defmt",
  "jiff-core",
@@ -2543,9 +2597,9 @@ dependencies = [
 
 [[package]]
 name = "jiff-static"
-version = "0.2.37"
+version = "0.2.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "378268a1116ad67ae6228701118ac9f491d78fda38a40a1f1a9e1348de6f7212"
+checksum = "2cc9817253cf7c7ee4684451bd327e88d6f3658014e54a29198625590650695c"
 dependencies = [
  "jiff-core",
  "proc-macro2",
@@ -2641,7 +2695,7 @@ dependencies = [
 [[package]]
 name = "kurvst"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "ciborium",
  "kurbo",
@@ -2708,7 +2762,7 @@ checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
 [[package]]
 name = "linnest"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "cgmath",
  "ciborium",
@@ -2732,7 +2786,7 @@ dependencies = [
 [[package]]
 name = "linnet"
 version = "0.17.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "ahash 0.8.12",
  "bincode 2.0.1",
@@ -2762,7 +2816,7 @@ dependencies = [
 [[package]]
 name = "linnet-py"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "ciborium",
  "dot-parser",
@@ -2840,9 +2894,9 @@ dependencies = [
 
 [[package]]
 name = "malachite-base"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc6d8264f5349e0aac20c5ada00ce6a54408455a355d6cd10fec233a10254562"
+checksum = "30a52349e41ad66905fd33a8dc8736c554d71cfe56b81e2c499abec7f0168725"
 dependencies = [
  "hashbrown 0.16.1",
  "itertools 0.14.0",
@@ -2852,22 +2906,22 @@ dependencies = [
 
 [[package]]
 name = "malachite-nz"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fe915f924252a6bb46670059b3cf36f022d68e4eeebe280ddb05fc411a6e268"
+checksum = "e3069312201645d5257b0c34b8d506933f9d5ea82133b14b9c76be2ce5bb41a6"
 dependencies = [
  "itertools 0.14.0",
  "libm",
  "malachite-base",
  "serde",
- "wide 0.7.33",
+ "wide 0.8.3",
 ]
 
 [[package]]
 name = "malachite-q"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccc576eda346100e6ac908df4d239cb902e96be6e8fe9e275f2d11d25bdcbaf5"
+checksum = "d2549764c0d9756d0396cf0c7fb47aee5df4da8a771ac5bfc616bb53ac344c9c"
 dependencies = [
  "itertools 0.14.0",
  "malachite-base",
@@ -2953,9 +3007,9 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "1.2.3"
+version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b18443e9c262bfe8fa82f51666e2642c53393f7e5c27b3e1aeab922cff5b9d8"
+checksum = "1788edb87fdc09c7e26304471e2f5be8cdefb1b6930d6e3985fc02ff53bf86ee"
 dependencies = [
  "libc",
  "log",
@@ -3097,7 +3151,7 @@ dependencies = [
 [[package]]
 name = "numerica"
 version = "3.0.1"
-source = "git+https://github.com/symbolica-dev/symbolica?branch=community#ed2374f1d880d52c3a7ca48cd7c22f4baad5c020"
+source = "git+https://github.com/symbolica-dev/symbolica?branch=community#c78cffc20f318df1fce50539a587cbe8ffc717c0"
 dependencies = [
  "ahash 0.8.12",
  "astro-float",
@@ -3142,15 +3196,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "object"
-version = "0.39.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e5a6c098c7a3b6547378093f5cc30bc54fd361ce711e05293a5cc589562739b"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3165,7 +3210,7 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 [[package]]
 name = "one-loop-reduce"
 version = "0.1.0"
-source = "git+https://github.com/lcnbr/one-loop-reduce?branch=main#87f9758a7a1c8ae233611af1ac7d698cd97958f1"
+source = "git+https://github.com/lcnbr/one-loop-reduce?branch=main#b53a70776a43bd14c6562c52a03bc4909568e473"
 dependencies = [
  "feynkit-graph",
  "feynkit-kinematics",
@@ -3177,7 +3222,7 @@ dependencies = [
 [[package]]
 name = "one-loop-reduce-python"
 version = "0.1.0"
-source = "git+https://github.com/lcnbr/one-loop-reduce?branch=main#87f9758a7a1c8ae233611af1ac7d698cd97958f1"
+source = "git+https://github.com/lcnbr/one-loop-reduce?branch=main#b53a70776a43bd14c6562c52a03bc4909568e473"
 dependencies = [
  "feynkit-py",
  "one-loop-reduce",
@@ -3189,7 +3234,7 @@ dependencies = [
 [[package]]
 name = "oneloop"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#6c9874dc5670ed655b9cce84702ec27d36098a9f"
+source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#27c3723434b7d99cf70ce612b0b8041d3f5c0e78"
 dependencies = [
  "bincode 2.0.1",
  "symbolica",
@@ -3199,7 +3244,7 @@ dependencies = [
 [[package]]
 name = "oneloop-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#6c9874dc5670ed655b9cce84702ec27d36098a9f"
+source = "git+https://github.com/alphal00p/oneloopmaster?branch=main#27c3723434b7d99cf70ce612b0b8041d3f5c0e78"
 dependencies = [
  "oneloop",
  "pyo3",
@@ -3324,19 +3369,21 @@ checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 
 [[package]]
 name = "pest"
-version = "2.9.2"
+version = "2.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45d3aca230fad2e6f6317ca0a72724338c4960cb97168a85cdee66df4a9a21a8"
+checksum = "b568374ba38b33a6c627141f891faf16902b08d2db26b8ede1bcb0a15b1919fa"
 dependencies = [
  "memchr",
+ "psm",
+ "stacker",
  "ucd-trie",
 ]
 
 [[package]]
 name = "pest_derive"
-version = "2.9.2"
+version = "2.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "284b60557f2c4a2e72ad3f2d34d42685a2fa4a6a61d0d2a10c0ae2a5e916c2cf"
+checksum = "b66e184b924cebaaff20ab2256ca52f12332d528a39aa76553b5d96f92aacf7f"
 dependencies = [
  "pest",
  "pest_generator",
@@ -3344,22 +3391,22 @@ dependencies = [
 
 [[package]]
 name = "pest_generator"
-version = "2.9.2"
+version = "2.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d9d1f08a115309ee99268cf85e5228e0e56aa9caf8841ec12866b6be07c3109"
+checksum = "a87478d267e4de54a626af9754f2f0f58e927aac6ed0575fe89bc05ad6851694"
 dependencies = [
  "pest",
  "pest_meta",
  "proc-macro2",
  "quote",
- "syn 2.0.119",
+ "syn 3.0.9",
 ]
 
 [[package]]
 name = "pest_meta"
-version = "2.9.2"
+version = "2.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed93ba1a9ffcca32130a5188701c81c0c49cf00d4b7c5007d5148951d743adcb"
+checksum = "4f986f248b4241ac359b831f6139aaa34e03b08a37b6caf7e201a33f95c869e1"
 dependencies = [
  "pest",
 ]
@@ -3577,9 +3624,9 @@ dependencies = [
 
 [[package]]
 name = "powerfmt"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "439ee305def115ba05938db6eb1644ff94165c5ab5e9420d1c1bcedbba909391"
+checksum = "4a6394b9e965e73d0a289ee54f589087e2c676aedf60885baf52c76b771e4958"
 
 [[package]]
 name = "ppv-lite86"
@@ -3643,11 +3690,10 @@ dependencies = [
 
 [[package]]
 name = "psm"
-version = "0.1.32"
+version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dcd034599e63b970727f70d79e02d62390a4a84f7c6b827c27c46d5ac3fa622"
+checksum = "200b9ff220857e53e184257720a14553b2f4aa02577d2ed9842d45d4b9654810"
 dependencies = [
- "ar_archive_writer",
  "cc",
 ]
 
@@ -4127,7 +4173,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d84e8ba78bd384263e5922f084cbe1b081c3b7e69add59c8fb097b879ba968a"
 dependencies = [
  "globset",
- "sha2",
+ "sha2 0.11.1",
  "walkdir",
 ]
 
@@ -4258,7 +4304,7 @@ dependencies = [
 [[package]]
 name = "rustred"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#9cf14d3a7e9d82d77db3453fd7120b06ed7f6170"
+source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
 dependencies = [
  "bincode 2.0.1",
  "blake3",
@@ -4271,22 +4317,23 @@ dependencies = [
 [[package]]
 name = "rustred-app"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#9cf14d3a7e9d82d77db3453fd7120b06ed7f6170"
+source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
 dependencies = [
  "bincode 2.0.1",
  "blake3",
+ "flate2",
  "rayon",
  "rustred",
  "serde",
  "serde_json",
  "symbolica",
- "toml 1.1.6+spec-1.1.0",
+ "toml 1.1.8+spec-1.1.0",
 ]
 
 [[package]]
 name = "rustred-feynkit"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#9cf14d3a7e9d82d77db3453fd7120b06ed7f6170"
+source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
 dependencies = [
  "pyo3",
  "rustred",
@@ -4297,12 +4344,12 @@ dependencies = [
 [[package]]
 name = "rustred-order"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#9cf14d3a7e9d82d77db3453fd7120b06ed7f6170"
+source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
 
 [[package]]
 name = "rustred-python"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/rustred?branch=main#9cf14d3a7e9d82d77db3453fd7120b06ed7f6170"
+source = "git+https://github.com/alphal00p/rustred?branch=main#74872fb4490881d96fcecfec26241a53bbf0ab7c"
 dependencies = [
  "pyo3",
  "rustred-app",
@@ -4345,6 +4392,15 @@ name = "safe_arch"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96b02de82ddbe1b636e6170c21be622223aea188ef2e139be0a5b219ec215323"
+dependencies = [
+ "bytemuck",
+]
+
+[[package]]
+name = "safe_arch"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "629516c85c29fe757770fa03f2074cf1eac43d44c02a3de9fc2ef7b0e207dfdd"
 dependencies = [
  "bytemuck",
 ]
@@ -4427,15 +4483,16 @@ checksum = "e7a5d71263a5a7d47b41f6b3f06ba276f10cc18b0931f1799f710578e2309348"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]
 name = "serde_json"
-version = "1.0.151"
+version = "1.0.154"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14"
+checksum = "e7e9cc8b1b85264074fbcc02a88680c4096b1e47df8f739dceb03bf482f04bd6"
 dependencies = [
+ "foldhash",
  "indexmap",
  "itoa",
  "memchr",
@@ -4463,7 +4520,7 @@ checksum = "8d3b1629de253c70a0508c3899572da79ca359fdab27c7920ff00406df418906"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -4477,9 +4534,9 @@ dependencies = [
 
 [[package]]
 name = "serde_spanned"
-version = "1.1.1"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6662b5879511e06e8999a8a235d848113e942c9124f211511b16466ee2995f26"
+checksum = "4e7523beb55eece201a2356bee0bbca0d1ab466c14c07703b2e0ee6d42cb0c2c"
 dependencies = [
  "serde_core",
 ]
@@ -4499,13 +4556,24 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.11.0"
+version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4"
+checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
 dependencies = [
  "cfg-if",
- "cpufeatures",
- "digest",
+ "cpufeatures 0.2.17",
+ "digest 0.10.7",
+]
+
+[[package]]
+name = "sha2"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47d7069beb7d6ac7b9acd1039986e73443f24234f41074da099d6f994ac9ad19"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.3.1",
+ "digest 0.11.3",
 ]
 
 [[package]]
@@ -4630,9 +4698,9 @@ dependencies = [
 
 [[package]]
 name = "smallvec"
-version = "1.16.2"
+version = "1.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9395f0f0eee849a9b707b2f06bb92a6a422090e2123bb2ef8e87a0e61892a8e"
+checksum = "5b3dc8af474f516a851ff4bd12db780f948b9250ad37211e4eec0bccea54e01b"
 dependencies = [
  "serde",
 ]
@@ -4658,7 +4726,7 @@ checksum = "02ef091d4e8b981dbaa4cc17789d00b53d5d2c001ae689f14e6093f30c529036"
 [[package]]
 name = "spenso"
 version = "0.6.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "ahash 0.8.12",
  "append-only-vec",
@@ -4706,7 +4774,7 @@ dependencies = [
 [[package]]
 name = "spenso-hep-lib"
 version = "0.1.7"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "ahash 0.8.12",
  "idenso",
@@ -4719,7 +4787,7 @@ dependencies = [
 [[package]]
 name = "spenso-macros"
 version = "0.3.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4735,7 +4803,7 @@ checksum = "3763264f6b73151db08c50ff20d7d8a0b8796e021cdea7ceedad07b80155fa0e"
 [[package]]
 name = "spynso3"
 version = "0.1.2"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "ahash 0.8.12",
  "ciborium",
@@ -4754,6 +4822,7 @@ dependencies = [
  "spenso-hep-lib",
  "spenso-macros",
  "symbolica",
+ "symbolica-data",
  "symbolica-typst-plugin",
  "tabled",
  "thiserror 2.0.21",
@@ -4946,10 +5015,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "symbolica-data"
+version = "0.1.0"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
+dependencies = [
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+]
+
+[[package]]
 name = "symbolica-integrate"
-version = "2.0.1"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47297a53bc31fa4251d562f658915930332bd97d6a273e97f70286a2249a12ba"
+checksum = "212f19b21d6cc1bb31ded2428a96c5e16bb5f1fcd2978f42b5cca95688636a8a"
 dependencies = [
  "brotli",
  "proc-macro2",
@@ -4970,7 +5049,7 @@ dependencies = [
 [[package]]
 name = "symbolica-utils"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "bincode 2.0.1",
  "bincode-trait-derive",
@@ -5002,12 +5081,13 @@ dependencies = [
 
 [[package]]
 name = "symjit"
-version = "2.26.4"
+version = "2.27.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37344a51408baa239bbaa771e40cd908686bffed4f4491ec6bc608e8d248c931"
+checksum = "3e615ee31771ded588aaecf42d0217b711e0aa3f582fdd293e124d918bd45660"
 dependencies = [
  "ahash 0.8.12",
  "anyhow",
+ "corosensei",
  "hashbrown 0.16.1",
  "hugepage-rs",
  "lazy_static",
@@ -5021,7 +5101,7 @@ dependencies = [
  "serde",
  "serde_json",
  "spec_math",
- "toml 1.1.6+spec-1.1.0",
+ "toml 1.1.8+spec-1.1.0",
  "wasmtime-jit-icache-coherence",
  "wide 1.7.1",
  "windows-sys 0.61.2",
@@ -5051,9 +5131,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "3.0.6"
+version = "3.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8593e8e72159ed2257d083c7a454a85cbf854f37a0966d8d483aff8c8a3ebcee"
+checksum = "d78c8dee4c7bf0e14673097256fed6142ce9d3b85a408189d07482442145823b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5068,7 +5148,7 @@ checksum = "901704edd0dfe137f1987838ee4f259e4e063c31371bdb423f7ae38ec6f77f02"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -5161,9 +5241,9 @@ dependencies = [
 
 [[package]]
 name = "thin-vec"
-version = "0.2.20"
+version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4568d7e143ec86d2021c338bae2afa88699e84b8e0af523626654fe6f03a1748"
+checksum = "d6a4b9ba8738cb4a4f399d37e266becfd475e75eb73425b87a05a2f2039ba63e"
 
 [[package]]
 name = "thiserror"
@@ -5202,7 +5282,7 @@ checksum = "fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]
@@ -5217,7 +5297,7 @@ dependencies = [
 [[package]]
 name = "three-dimensional-reps"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "bincode 2.0.1",
  "bincode-trait-derive",
@@ -5360,7 +5440,7 @@ checksum = "cf92845e79fc2e2def6a5d828f0801e29a2f8acc037becc5ab08595c7d5e9863"
 dependencies = [
  "indexmap",
  "serde_core",
- "serde_spanned 1.1.1",
+ "serde_spanned 1.1.2",
  "toml_datetime 0.7.5+spec-1.1.0",
  "toml_parser",
  "toml_writer",
@@ -5369,14 +5449,14 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "1.1.6+spec-1.1.0"
+version = "1.1.8+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "920602543f0911ab71da12c50d59701da54c196d1a2bf5cb4b75667f137a406a"
+checksum = "20489e00e4d8741d6be680764cc12e270655e375a20d1011e844a9c3379e678d"
 dependencies = [
  "indexmap",
  "serde_core",
- "serde_spanned 1.1.1",
- "toml_datetime 1.1.1+spec-1.1.0",
+ "serde_spanned 1.1.2",
+ "toml_datetime 1.1.2+spec-1.1.0",
  "toml_parser",
  "toml_writer",
  "winnow 1.0.4",
@@ -5402,9 +5482,9 @@ dependencies = [
 
 [[package]]
 name = "toml_datetime"
-version = "1.1.1+spec-1.1.0"
+version = "1.1.2+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3165f65f62e28e0115a00b2ebdd37eb6f3b641855f9d636d3cd4103767159ad7"
+checksum = "2b86d767906c6c42421dcba507eb9d203e779497710a47782a224bb871653053"
 dependencies = [
  "serde_core",
 ]
@@ -5425,9 +5505,9 @@ dependencies = [
 
 [[package]]
 name = "toml_parser"
-version = "1.1.3+spec-1.1.0"
+version = "1.1.5+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d38ac1cf9b95face32296c0a3ede1fdc270627c9d9c02a7274dd6d960dc4d56"
+checksum = "baa693a8032d7e1cada7d0041e96126df243179ff061456783ac7f12bda4744c"
 dependencies = [
  "winnow 1.0.4",
 ]
@@ -5440,9 +5520,9 @@ checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 
 [[package]]
 name = "toml_writer"
-version = "1.1.2+spec-1.1.0"
+version = "1.1.3+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d56353a2a665ad0f41a421187180aab746c8c325620617ad883a99a1cbe66d2"
+checksum = "06bdbd8cfc056b8d2e2e85f29b56a3bdbecb527cef81eb39e3e7b98af4652770"
 
 [[package]]
 name = "tracing"
@@ -5659,7 +5739,6 @@ dependencies = [
  "rustc-hash 2.1.3",
  "serde",
  "serde_json",
- "typst-assets",
  "typst-library",
  "typst-syntax",
  "typst-timing",
@@ -5706,7 +5785,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.15.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "arrayvec",
  "az",
@@ -5855,11 +5934,14 @@ dependencies = [
 [[package]]
 name = "typst-renderer"
 version = "0.1.0"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "comemo",
+ "serde_json",
+ "symbolica-data",
  "tempfile",
  "typst",
+ "typst-assets",
  "typst-html",
  "typst-kit",
  "typst-layout",
@@ -5872,7 +5954,7 @@ dependencies = [
 [[package]]
 name = "typst-svg"
 version = "0.15.1"
-source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#aa2ec7b38363c01971916c178a79d7f27e6b8ce3"
+source = "git+https://github.com/alphal00p/gammaloop?branch=feynkit#2947ca32d835f80fe6d8c247baefba7648b5a896"
 dependencies = [
  "base64 0.22.1",
  "comemo",
@@ -6056,9 +6138,9 @@ dependencies = [
 
 [[package]]
 name = "unicase"
-version = "2.9.0"
+version = "2.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbc4bc3a9f746d862c45cb89d705aa10f187bb96c76001afab07a0d35ce60142"
+checksum = "357cc3acc6a036009fd6c973ed009037c732d60d0b4f6c673e9041497482a28f"
 
 [[package]]
 name = "unicode-bidi"
@@ -6080,9 +6162,9 @@ checksum = "ce61d488bcdc9bc8b5d1772c404828b17fc481c0a582b5581e95fb233aef503e"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.26"
+version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954"
+checksum = "a2c754d6c33795a1c324727428e5a7dedb5b06195f9890bdbcba760d3e246563"
 
 [[package]]
 name = "unicode-math-class"
@@ -6230,9 +6312,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.27.0"
+version = "1.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97277d36b9c3ace13e58fa6e753f8b0bbbf302a18dd193240d70f9e29681059a"
+checksum = "7cc1186384beb7dd8eedea376413fd654937285ea6c9cfbb928dc3043ea4b606"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -6416,7 +6498,7 @@ dependencies = [
  "bumpalo",
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
  "wasm-bindgen-shared",
 ]
 
@@ -6532,6 +6614,16 @@ checksum = "0ce5da8ecb62bcd8ec8b7ea19f69a51275e91299be594ea5cc6ef7819e16cd03"
 dependencies = [
  "bytemuck",
  "safe_arch 0.7.4",
+]
+
+[[package]]
+name = "wide"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13ca908d26e4786149c48efcf6c0ea09ab0e06d1fe3c17dc1b4b0f1ca4a7e788"
+dependencies = [
+ "bytemuck",
+ "safe_arch 0.9.3",
 ]
 
 [[package]]
@@ -6808,9 +6900,9 @@ dependencies = [
 
 [[package]]
 name = "xprec"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39a30f7277acb4ef10faeec631c7fbb0ff92355bea37e1b01a63f3803c78e319"
+checksum = "6e736c2312fb577875c99665eae274f51a6b33489f00114602b69cf224f48a7c"
 dependencies = [
  "approx 0.5.1",
  "libm",
@@ -6846,24 +6938,24 @@ checksum = "ec8ebde2db3681e8c9980cc27822030e68752690ddfa9473e739aeb4dbde6d71"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
  "synstructure",
 ]
 
 [[package]]
 name = "zerocopy"
-version = "0.8.59"
+version = "0.8.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6df92bf3d9227be3d53173901ddbffac2babc27ae50f397776ffd6dc33f800cb"
+checksum = "e5fe1f8f1b06191a00962174c61aa5005e0bb391a6d80d07e24d115c01a92ed8"
 dependencies = [
  "zerocopy-derive",
 ]
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.8.59"
+version = "0.8.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac4f328cf2f05d084e496c3e9c3f33ed0a183656a16e1fcec4d464d8373aec82"
+checksum = "863ad3ac83293fb4d740aedbfdc9240dd8d1a50c1099acd76ce80ce7c7230c7f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6887,7 +6979,7 @@ checksum = "f75b4683f6c7f45248d4d64056a24298c6281e0993356d7d1b4a1a962ef10d4a"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
  "synstructure",
 ]
 
@@ -6925,7 +7017,7 @@ checksum = "34df6fc39dbd26ddc9c10e6a2984476e13acce22e64e4487636ef494369225da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.9",
 ]
 
 [[package]]

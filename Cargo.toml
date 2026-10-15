@@ -31,8 +31,8 @@ opt-level = 2
 # Optimize across crates in native release builds with ThinLTO.
 [profile.release]
 lto = "thin"
-opt-level = "s"
-codegen-units = 1
+opt-level = 3
+#codegen-units = 1
 strip = "symbols"
 
 # Optimize browser downloads separately from native release performance.
@@ -118,7 +118,7 @@ vakint = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop"
 typst-library = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 typst-svg = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 # Native evaluator composition for numerical-dual sector generation (Symbolica PR #54).
-symbolica = { git = "https://github.com/ValentinHirschi/symbolica", rev = "1deccb8538ccb91dc2c1e58fc0a2e900d2276bf4" }
+symbolica = { git = "https://github.com/ValentinHirschi/symbolica", branch = "codex/evaluator-composition" }
 # Preserve the official negative-integer serialization fix and shared numeric types.
 numerica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
 graphica = { git = "https://github.com/symbolica-dev/symbolica", branch = "community" }
