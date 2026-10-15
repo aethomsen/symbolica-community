@@ -86,8 +86,8 @@ python_stubgen = [
 ]
 
 [dependencies]
-fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "dea66bfd116356092d3a68f19fdb77d2a6f55b25", default-features = false }
-hyperbolica = { optional = true, git = "https://github.com/benruijl/hyperbolica", rev = "31292085504b794dc444a006eba1d3013ed30944", default-features = false, features = ["python"] }
+fastsecdec-python = { optional = true, git = "https://github.com/alphal00p/fastSecDec", rev = "4572d7a1d2e26e11b7ec213eda998efb7a5e8caa", default-features = false }
+hyperbolica = { optional = true, git = "https://github.com/lcnbr/hyperbolica", rev = "2e6fe4ef9c715d70f937aca53211793727f819b9", default-features = false, features = ["python"] }
 one-loop-reduce-python = { optional = true, git = "https://github.com/lcnbr/one-loop-reduce", branch = "main", default-features = false }
 spynso3 = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
 linnet-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", branch = "feynkit", default-features = false }
@@ -97,7 +97,7 @@ feynkit-py = { optional = true, git = "https://github.com/alphal00p/gammaloop", 
 rustred-feynkit = { optional = true, git = "https://github.com/alphal00p/rustred", branch = "main", default-features = false, features = ["campaign-api"] }
 symbolica = { version = "3.0.1", default-features = false, features = ["python_export"] }
 symbolica-integrate = { version = "2.0.1", default-features = false, features = ["compressed-step-metadata"] }
-symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "995e531c71df4b9c4b1c32fef8df8e7e8d201e12", default-features = false, features = ["python_api"] }
+symbolica-amflow = { optional = true, git = "https://github.com/alphal00p/RustFlow", rev = "ff39c89683bdf0ad7bac653ef549802a37ffa4a3", default-features = false, features = ["python_api"] }
 # Tensor bindings split methods across impl blocks on both native and WASM.
 pyo3 = { version = "0.28", features = ["multiple-pymethods"] }
 pyo3-stub-gen = { version = "0.17", optional = true, default-features = false, features = [
@@ -110,7 +110,7 @@ oneloop-python = { optional = true, git = "https://github.com/alphal00p/oneloopm
 # Keep embedded SymJIT caches and generated native evaluators out of wheels.
 oneloop = { optional = true, git = "https://github.com/alphal00p/oneloopmaster", branch = "main", default-features = false }
 # RustRed-enabled Vakint, with the same modern FeynKit tensor bridge as this host.
-vakint = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop", rev = "6203c6cbba6ae5e90329ba5081fad55319e678db", features = ["symbolica_community_module"] }
+vakint = { optional = true, git = "https://github.com/ValentinHirschi/gammaloop", rev = "854e849570cf44e115063e97d612090a0ff48121", features = ["symbolica_community_module"] }
 
 # All community modules share one Symbolica kernel and numeric owners.
 [patch.crates-io]

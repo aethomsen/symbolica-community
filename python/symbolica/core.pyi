@@ -2136,6 +2136,7 @@ class Citation:
         *,
         reasons: Sequence[str] = (),
         description: str = "",
+        url: str = "",
         relevance: int | None = None,
     ) -> Citation:
         """Create a citation. Relevance is a nonnegative library-defined score."""
@@ -2146,6 +2147,11 @@ class Citation:
     @property
     def reference(self) -> str:
         """The human-readable bibliographic reference."""
+
+    @property
+    def url(self) -> str:
+        """A hyperlink to the work."""
+
     @property
     def bibtex(self) -> str:
         """The ready-to-export BibTeX entry."""
@@ -2160,7 +2166,7 @@ class Citation:
         """The relevance score, or None if unknown."""
 
     def __str__(self) -> str:
-        """Display the reference, identifier, description, reasons and known relevance."""
+        """Display the reference, identifier, URL, description, reasons and known relevance."""
 
     def __repr__(self) -> str:
         """Return a compact representation suitable for lists of citations."""
