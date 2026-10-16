@@ -1,0 +1,11 @@
+[package]
+name = "ucrt64-numeric-probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+gmp-mpfr-sys = "=1.7.1"
+rug = "=1.30.0"

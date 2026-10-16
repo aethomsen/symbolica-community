@@ -1,0 +1,104 @@
+name: UCRT64 compatibility probe
+
+on:
+  push:
+    branches: [codex/test-ucrt64-20261016]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gmp-mpfr:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            diffutils make m4
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-rust
+      - name: Check UCRT toolchain and test pinned GMP/MPFR
+        shell: msys2 {0}
+        env:
+          CARGO_BUILD_JOBS: "2"
+          # Keep GMP and MPFR on the same ISO-compatible printf implementation.
+          CFLAGS: "-O2 -D__USE_MINGW_ANSI_STDIO=1"
+          GMP_MPFR_SYS_CACHE: ${{ runner.temp }}/gmp-mpfr-ucrt64
+        run: |
+          test "$MSYSTEM" = UCRT64
+          command -v gcc
+          command -v rustc
+          rustc -vV
+          gcc --version
+          test -f "$(gcc -print-file-name=libucrt.a)"
+          cargo test --manifest-path .github/ci/ucrt64-probe/Cargo.toml -- --nocapture
+
+      - name: Print native test diagnostics
+        if: failure()
+        shell: msys2 {0}
+        run: find .github/ci/ucrt64-probe/target -name test-suite.log -exec cat {} \;
+      - name: Preserve native test and configure logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ucrt64-numeric-diagnostics
+          include-hidden-files: true
+          path: .github/ci/ucrt64-probe/target/debug/build/gmp-mpfr-sys-*/out/build/**/*.log
+
+  community-wheel:
+    needs: gmp-mpfr
+    runs-on: windows-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          architecture: x64
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          path-type: inherit
+          install: >-
+            git ca-certificates diffutils make m4
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-rust
+            mingw-w64-ucrt-x86_64-make
+      - name: Build and repair the complete Community wheel
+        shell: msys2 {0}
+        env:
+          CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+          CARGO_BUILD_JOBS: "2"
+          # Keep GMP and MPFR on the same ISO-compatible printf implementation.
+          CFLAGS: "-O2 -D__USE_MINGW_ANSI_STDIO=1"
+          RUSTFLOW_WORKSPACE_FEATURES: pyo3/extension-module
+          RUSTFLOW_WORKSPACE_NO_DEFAULT_FEATURES: "0"
+        run: |
+          python -m pip install maturin==1.15.0 delvewheel pytest numpy
+          maturin build --release --locked --compression-level 9 --out dist
+          delvewheel repair dist/*.whl --wheel-dir wheelhouse
+          python scripts/build_data_bundle.py --out dist --check-catalog
+          python -m pip install dist/symbolica_fonts-*.whl dist/symbolica_vakint_data-*.whl wheelhouse/*.whl
+      - name: Test the installed wheel and native arithmetic
+        shell: msys2 {0}
+        env:
+          SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
+        run: |
+          python -m pytest -q tests/test_basic.py tests/test_community.py
+          python - <<'PYTHON'
+          from symbolica import Float
+          root = Float("2", decimal_digits=80).sqrt()
+          assert abs(float(root * root - 2)) < 1e-75
+          print("UCRT64: installed wheel passed high-precision MPFR arithmetic")
+          PYTHON
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ucrt64-community-wheel
+          path: wheelhouse/*.whl
+          if-no-files-found: error
