@@ -14,10 +14,10 @@ permissions:
 
 jobs:
   data:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - uses: dtolnay/rust-toolchain@1.98.0
@@ -25,7 +25,7 @@ jobs:
         run: python scripts/build_data_bundle.py --out dist --check-catalog
       - name: Check distribution size
         run: python scripts/check_distribution_size.py dist/*.whl
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-data
           path: |
@@ -36,10 +36,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [[ubuntu-latest, x86_64]]
+        runner: [[ubuntu-24.04, x86_64]]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - name: Build wheels
@@ -53,7 +53,7 @@ jobs:
           sccache: "true"
           manylinux: auto
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-linux-${{ matrix.runner[1] }}
           path: dist
@@ -64,8 +64,8 @@ jobs:
       matrix:
         runner: [[macos-15-intel, x86_64], [macos-14, aarch64]]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
       - name: Install LLVM Mach-O linker
@@ -83,16 +83,16 @@ jobs:
           args: --release --compression-level 9 --out dist
           sccache: "true"
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-macos-${{ matrix.runner[1] }}
           path: dist
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           architecture: "x64"
@@ -100,7 +100,9 @@ jobs:
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
         with:
+          # gmp-mpfr-sys 1.7.1 documents MINGW64; validate UCRT64 separately.
           msystem: MINGW64
+          suppress-deprecation-warnings: msystem-mingw64
           update: true
           path-type: inherit
           install: >-
@@ -123,82 +125,24 @@ jobs:
           delvewheel repair dist/*.whl --wheel-dir wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-windows-x86_64
           path: wheelhouse
-  pyemscripten:
-    runs-on: ubuntu-latest
-    needs: [data]
-    env:
-      PYODIDE_VERSION: "314.0.7"
-      # Pyodide's default Rust 1.93 predates Symbolica's Rust 1.96 minimum.
-      RUSTUP_TOOLCHAIN: "1.98.0"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.14"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-
-      - name: Set cross-build environment directory
-        run: echo "PYODIDE_XBUILDENV_PATH=$RUNNER_TEMP/pyodide-xbuildenv" >> "$GITHUB_ENV"
-
-      - name: Set up Pyodide cross-compilation
-        run: |
-          python -m pip install pyodide-build==0.39.0 maturin==1.15.0
-          pyodide xbuildenv install "$PYODIDE_VERSION"
-          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --target wasm32-unknown-emscripten
-
-      # Keep Rust/LLVM release optimization, but use minimal wasm-opt processing.
-      # Test the final wheel below, after zstd compression.
-      - name: Build wheel
-        env:
-          WASM_OPT_LEVEL: "-O0"
-          WASM_OPT_DEDUPLICATE_FUNCTIONS: "1"
-          WASM_RUST_PROFILE: release-performance
-          WASM_SKIP_TESTS: "1"
-        run: bash scripts/build_wasm_performance.sh dist
-
-      # Compress after pyodide-build's retagging/repacking, which uses deflate.
-      - name: Compress wheel with zstd
-        run: python scripts/compress_wheel_zstd.py dist/*-pyemscripten_2026_0_wasm32.whl
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: wheels-data
-          path: dist
-
-      - name: Test installation with micropip
-        env:
-          SYMBOLICA_LICENSE_KEY: ${{ secrets.SYMBOLICA_LICENSE }}
-        run: |
-          PYODIDE_DIST_DIR=$(pyodide config get dist_dir)
-          export PYODIDE_DIST_DIR
-          node .github/scripts/test_pyodide.mjs dist
-
-      - name: Upload wheel
-        uses: actions/upload-artifact@v4
-        with:
-          name: pyemscripten-wheels-2026-wasm32
-          path: dist/*-pyemscripten_2026_0_wasm32.whl
-          if-no-files-found: error
 
   publish:
     name: Publish to PyPI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [data, linux, macos, windows]
     if: inputs.publish == true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           pattern: wheels-*
@@ -210,46 +154,10 @@ jobs:
       - name: Check distribution sizes
         run: python scripts/check_distribution_size.py dist/*
 
-      - name: Publish to PyPI
-        uses: PyO3/maturin-action@v1
-        env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        with:
-          command: upload
-          args: --skip-existing dist/*
-
-  publish_pyemscripten:
-    name: Publish PyEmscripten to PyPI
-    runs-on: ubuntu-latest
-    needs: [data, pyemscripten]
-    if: inputs.publish == true
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.14"
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: pyemscripten-wheels-2026-wasm32
-          path: dist
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: wheels-data
-          path: dist
-
-      - name: Check core citation stub in source and wheels
-        run: python .github/scripts/check_core_stub.py python/symbolica/core.pyi dist/symbolica-*.whl
-
-      - name: Check distribution sizes
-        run: python scripts/check_distribution_size.py dist/*
+      - name: Install uv
+        run: python -m pip install uv==0.13.1
 
       - name: Publish to PyPI
-        uses: PyO3/maturin-action@v1
         env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        with:
-          command: upload
-          args: --skip-existing dist/*
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish --trusted-publishing never --check-url https://pypi.org/simple/ dist/*

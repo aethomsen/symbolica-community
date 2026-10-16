@@ -14,16 +14,23 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, macos-latest]
+                os: [ubuntu-24.04, macos-latest]
                 python-version: ["3.10"]
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Set up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v7
               with:
                   python-version: ${{ matrix.python-version }}
+
+            - name: Install LLVM Mach-O linker
+              if: runner.os == 'macOS'
+              run: |
+                  brew install llvm lld
+                  echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+                  echo "$(brew --prefix lld)/bin" >> "$GITHUB_PATH"
 
             - name: Build wheel
               uses: PyO3/maturin-action@v1
@@ -64,7 +71,7 @@ jobs:
               run: pytest tests/ -v
 
             - name: Run tests with coverage
-              if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
+              if: matrix.os == 'ubuntu-24.04' && matrix.python-version == '3.10'
               env:
                   SYMBOLICA_LICENSE: ${{ secrets.SYMBOLICA_LICENSE }}
               run: |
@@ -72,8 +79,8 @@ jobs:
                   pytest tests/ --cov=symbolica --cov-report=xml --cov-report=term
 
             - name: Upload coverage to codecov
-              if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
-              uses: codecov/codecov-action@v3
+              if: matrix.os == 'ubuntu-24.04' && matrix.python-version == '3.10'
+              uses: codecov/codecov-action@v7
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: ./coverage.xml
