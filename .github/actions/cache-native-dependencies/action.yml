@@ -1,0 +1,30 @@
+name: Cache native dependencies
+description: Reuse Cargo dependencies and tested GMP/MPFR libraries for one build environment.
+inputs:
+  variant:
+    description: Build profile, Python ABI and container/runtime identity.
+    required: true
+  shell:
+    description: Shell belonging to the build toolchain.
+    default: bash
+  command-format:
+    description: Command wrapper used to query Cargo and Rust.
+    default: '{0}'
+runs:
+  using: composite
+  steps:
+    - name: Identify C compiler and configure native library cache
+      id: compiler
+      shell: ${{ inputs.shell }}
+      run: |
+        fingerprint=$( { cc --version; cc -dumpmachine; } | python -c 'import hashlib, sys; print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest())')
+        echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
+        echo "GMP_MPFR_SYS_CACHE=$GITHUB_WORKSPACE/.ci-cache/gmp-mpfr" >> "$GITHUB_ENV"
+    - uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: ${{ inputs.variant }}-${{ steps.compiler.outputs.fingerprint }}
+        # The action also keys on Rust, Cargo.lock, Cargo config and compiler flags.
+        env-vars: MSYSTEM PYO3
+        cmd-format: ${{ inputs.command-format }}
+        cache-bin: false
+        cache-directories: ${{ github.workspace }}/.ci-cache/gmp-mpfr

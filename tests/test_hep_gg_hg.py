@@ -152,7 +152,8 @@ def test_cooperative_wait_timeout_retains_work(tmp_path, higgs_jet_data):
     async def run():
         ready = asyncio.Event()
         session._future = asyncio.create_task(ready.wait())
-        with pytest.raises(TimeoutError):
+        # asyncio.TimeoutError only aliases built-in TimeoutError on Python 3.11+.
+        with pytest.raises(asyncio.TimeoutError):
             await session.wait_async(timeout=0)
         assert not session._future.cancelled()
         ready.set()
