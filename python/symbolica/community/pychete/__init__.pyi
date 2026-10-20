@@ -478,9 +478,10 @@ class TheoryBuilder:
         Import declarations without adding any action. Apply the returned map
         explicitly to each source expression after the target builder seals.
         """
-    def parameter(self, name: builtins.str, *, real: builtins.bool = False, mass_dimension: builtins.int = 0) -> Parameter:
+    def parameter(self, name: builtins.str, *, real: builtins.bool = False, mass_dimension: int | Expression = 0) -> Parameter:
         r"""
-        Declare a scalar coupling. Its dimension does not set EFT counting.
+        Declare a scalar coupling. Its exact engineering dimension does not
+        set EFT counting; rational dimensions use Q(n, d).
         """
     def real_scalar(self, name: builtins.str) -> Field:
         r"""
@@ -519,7 +520,7 @@ class TheoryBuilder:
         Declare a scalar with ordered representation slots and exact U(1)
         charges. For example: scalar("H", indices=[weak], charges={Y: Q(1, 2)}).
         """
-    def tensor_parameter(self, name: builtins.str, indices: typing.Sequence[Representation], *, real: builtins.bool = False, mass_dimension: builtins.int = 0) -> Parameter:
+    def tensor_parameter(self, name: builtins.str, indices: typing.Sequence[Representation], *, real: builtins.bool = False, mass_dimension: int | Expression = 0) -> Parameter:
         r"""
         Declare a parameter tensor with ordered representation slots.
         All rank and representation checks are performed by the Rust core.

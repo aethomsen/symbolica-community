@@ -3373,7 +3373,7 @@ checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
 [[package]]
 name = "pychete"
 version = "0.1.0"
-source = "git+https://github.com/aethomsen/pychete?rev=64de3face8dffd84728e761c7cf28536ba5f4f2b#64de3face8dffd84728e761c7cf28536ba5f4f2b"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
 dependencies = [
  "pychete-core",
  "pychete-functional",
@@ -3385,7 +3385,7 @@ dependencies = [
 [[package]]
 name = "pychete-core"
 version = "0.1.0"
-source = "git+https://github.com/aethomsen/pychete?rev=64de3face8dffd84728e761c7cf28536ba5f4f2b#64de3face8dffd84728e761c7cf28536ba5f4f2b"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
 dependencies = [
  "idenso",
  "serde",
@@ -3399,7 +3399,7 @@ dependencies = [
 [[package]]
 name = "pychete-functional"
 version = "0.1.0"
-source = "git+https://github.com/aethomsen/pychete?rev=64de3face8dffd84728e761c7cf28536ba5f4f2b#64de3face8dffd84728e761c7cf28536ba5f4f2b"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
 dependencies = [
  "pychete-core",
 ]
@@ -3407,7 +3407,7 @@ dependencies = [
 [[package]]
 name = "pychete-matching"
 version = "0.1.0"
-source = "git+https://github.com/aethomsen/pychete?rev=64de3face8dffd84728e761c7cf28536ba5f4f2b#64de3face8dffd84728e761c7cf28536ba5f4f2b"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
 dependencies = [
  "pychete-core",
  "pychete-functional",
@@ -3417,7 +3417,7 @@ dependencies = [
 [[package]]
 name = "pychete-models"
 version = "0.1.0"
-source = "git+https://github.com/aethomsen/pychete?rev=64de3face8dffd84728e761c7cf28536ba5f4f2b#64de3face8dffd84728e761c7cf28536ba5f4f2b"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
 dependencies = [
  "pychete-core",
 ]
@@ -3425,7 +3425,7 @@ dependencies = [
 [[package]]
 name = "pychete-python"
 version = "0.1.0"
-source = "git+https://github.com/aethomsen/pychete?rev=64de3face8dffd84728e761c7cf28536ba5f4f2b#64de3face8dffd84728e761c7cf28536ba5f4f2b"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
 dependencies = [
  "pychete",
  "pyo3",
@@ -3437,7 +3437,7 @@ dependencies = [
 [[package]]
 name = "pychete-simplify"
 version = "0.1.0"
-source = "git+https://github.com/aethomsen/pychete?rev=64de3face8dffd84728e761c7cf28536ba5f4f2b#64de3face8dffd84728e761c7cf28536ba5f4f2b"
+source = "git+https://github.com/aethomsen/pychete?rev=8f111664c3cc7f10748c221ad6ed4f4db4a74a2a#8f111664c3cc7f10748c221ad6ed4f4db4a74a2a"
 dependencies = [
  "pychete-core",
  "pychete-functional",

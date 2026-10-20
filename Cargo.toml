@@ -88,7 +88,7 @@ python_stubgen = [
 ]
 
 [dependencies]
-pychete-python = { optional = true, git = "https://github.com/aethomsen/pychete", rev = "64de3face8dffd84728e761c7cf28536ba5f4f2b" }
+pychete-python = { optional = true, git = "https://github.com/aethomsen/pychete", rev = "8f111664c3cc7f10748c221ad6ed4f4db4a74a2a" }
 symbolica-data = { git = "https://github.com/alphal00p/gammaloop", branch = "feynkit" }
 serde_json = "1"
 fastsecdec-python = { optional = true, git = "https://github.com/aethomsen/fastSecDec", rev = "1aba4ba3ab9fcd09c0794a834b74e6aff5b18f64", default-features = false }
