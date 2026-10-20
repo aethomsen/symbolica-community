@@ -55,9 +55,16 @@ def test_color_chain_stack_keeps_mathml_without_embedded_fonts():
             color_conjugate,
         ]
     )
-    html = stack.text
+    # Marimo mounts each shared widget; its model carries the bounded MathML page.
+    assert stack.text.count("<marimo-anywidget") == 3
+    viewers = [expression.paged() for expression in expressions]
+    try:
+        html = "".join(viewer._page()["html"] for viewer in viewers)
+    finally:
+        for viewer in viewers:
+            viewer.close()
     assert html.count("<math") == 3
-    assert html.count("<div data-spenso-math>") == 3
+    assert html.count('<math data-spenso-math=""') == 3
     assert "<mi>" in html
     assert "data:font/" not in html
     # The current renderer references the full math font externally; notebook
